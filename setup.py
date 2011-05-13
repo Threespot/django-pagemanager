@@ -25,5 +25,9 @@ setup(
         'admin interface'
     ),
     classifiers=classifiers,
-    install_requires=['django>=1.3', 'django-mptt>=0.4.2'],
+    install_requires=[
+        'django>=1.3',
+        'django-mptt>=0.4.2',
+        'django-reversion>=1.4',
+    ],
 )
