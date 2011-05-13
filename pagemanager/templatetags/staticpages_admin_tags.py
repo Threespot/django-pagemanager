@@ -4,7 +4,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils.safestring import mark_safe
 from django.utils.text import capfirst
 
-from navigation.models import Menu
 from pagemanager.app_settings import STATICPAGES_PAGE_MODEL
 
 register = template.Library()
@@ -28,20 +27,6 @@ def load_obj(parser, token):
     In any admin change_view, adds the object being changed to the context
     """
     return ObjNode()
-
-
-class MenuNode(template.Node):
-    def render(self, context):
-        context['navigation_menus'] = Menu.objects.all()
-        context['navigation_menu_model'] = Menu
-        return ''
-
-@register.tag
-def load_menus(parser, token):
-    """
-    In any admin change_view, adds the object being changed to the context
-    """
-    return MenuNode()
 
 
 class PagesNode(template.Node):

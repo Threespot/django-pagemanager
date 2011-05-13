@@ -1,0 +1,242 @@
+{% extends "admin/base_site.html" %}
+{% load i18n staticpages_admin_tags mptt_tags %}
+
+{% block extrahead %}
+    {% load_pages %}
+    {{ block.super }}
+    <script type="text/javascript" src="{{ STATIC_URL }}admin/js/jquery.min.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/jstree/jquery.jstree.js"></script>
+    <script type="text/javascript">
+        (function($){
+            $(function(){
+
+                // Automatically include X-CSRFToken header with all Ajax requests, containing the
+                // token from the csrftoken cookie.
+                $('html').ajaxSend(function(event, xhr, settings) {
+                    function getCookie(name) {
+                        var cookieValue = null;
+                        if (document.cookie && document.cookie != '') {
+                            var cookies = document.cookie.split(';');
+                            for (var i = 0; i < cookies.length; i++) {
+                                var cookie = jQuery.trim(cookies[i]);
+                                if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                    break;
+                                }
+                            }
+                        }
+                        return cookieValue;
+                    }
+                    if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                        xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+                    }
+                });
+
+                var tree_data = $('.tree:first');
+                var tree = $('<div></div>', {
+                    'id': 'tree'
+                }).insertBefore(tree_data).jstree({
+
+                    'core': {
+                        'animation': 0,
+                        'html_titles': true,
+                        'initially_open': [
+                            {% for node in staticpages_pages %}
+                                {% if node.get_ancestors|length < 1 %}
+                                    '#{{ node.node_id }}',
+                                {% endif %}
+                            {% endfor %}
+                        ],
+                        'li_height': '31px'
+                    },
+
+                    'dnd': {
+                        'drop_target': '#tree',
+                        'drop_finish': function(data){
+
+                            $nodes = $('.node');
+
+                            // Ennumerate the parent attribute
+                            $nodes.each(function(index, element){
+                                var $e = $(element),
+                                    $p = $($e.parents('.node')[0]);
+                                $e.attr('data-parent_id', $p.length ? $p.attr('data-node_id') : '');
+                            });
+
+                            $('#tree').add($nodes).filter(':has(> ul)').each(function(index, element){
+                                var $l = $(element).find('> ul > li').each(function(index, element){
+                                    $(element).attr('data-order', index);
+                                });
+                            });
+
+                            // Assemble data for Ajax POST
+                            var ajax_data = {};
+                            $nodes.each(function(index, element){
+                                var $e = $(element);
+                                ajax_data[$e.attr('data-node_id')] = $e.attr('data-parent_id') + ',' + $e.attr('data-order');
+                            });
+
+                            // Save parent + order data
+                            $.ajax({
+                                'cache': false,
+                                'data': ajax_data,
+                                'type': 'POST',
+                                'url': '/admin/staticpages/page/parentsorders/'
+                            });
+
+                        }
+                    },
+
+                    'html_data': {
+                        'data': tree_data,
+                        'ajax': false
+                    },
+
+                    'search': {
+                        'case_insensitive': true
+                    },
+
+                    'themes': {
+                        'dots': false,
+                        'icons': false
+                    },
+
+                    'plugins': ['themes', 'html_data', 'dnd', 'search']
+
+                });
+
+                $('#treesearch').submit(function(evt){
+                    evt.preventDefault();
+                    tree.jstree('clear_search');
+                    $('.jstree-search').removeClass('jstree-search');
+                    tree.jstree('close_node', $('.node'));
+                    tree.jstree('search', $(this).find('#searchbar').val());
+                    $('.jstree-search').closest('.node').addClass('jstree-search');
+                }).find('.reset').click(function(evt){
+                    evt.preventDefault();
+                    tree.jstree('clear_search');
+                    $('.jstree-search').removeClass('jstree-search');
+                    $('#searchbar').val('');
+                });
+            })
+        })(jQuery);
+    </script>
+{% endblock extrahead %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" type="text/css" href="{% load adminmedia %}{% admin_media_prefix %}css/dashboard.css" />
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/admin_index.css" />
+    <style type="text/css">
+    .module table {
+        width: 100%;
+    }
+    </style>
+{% endblock %}
+
+
+{% block coltype %}colMS{% endblock %}
+
+{% block bodyclass %}dashboard{% endblock %}
+
+{% block breadcrumbs %}{% endblock %}
+
+{% block content_title %}{% endblock %}
+
+{% block content %}
+    <div id="content-main" class="clearfix">
+        <div id="staticpages">
+            <form id="treesearch">
+                <label for="searchbar"><img src="/static/admin/img/admin/icon_searchbox.png" alt="Search"></label>
+                <input type="text" size="40" name="q" value="" id="searchbar">
+                <input type="submit" value="Search">
+                <input type="submit" value="Reset" class="reset">
+            </form>
+            <ul class="tree">
+                {% load_pages %}
+                {% recursetree staticpages_pages %}
+                    <li id="{{ node.node_id }}" data-node_id="{{ node.pk }}" data-parent_id="{{ node.parent.pk }}" data-order="{{ node.order }}" class="clearfix node">
+                        <div class="data">
+                            <a href="{{ node.get_absolute_url }}"><span>{{ node.title }}</span></a>
+                            <div class="actions">
+                                <a class="edit" href="{{ node.get_edit_url }}">Edit</a>
+                                <a class="add" href="{{ node.get_add_child_url }}">Add Child</a>
+                                <a class="delete" href="{{ node.get_delete_url }}">Delete</a>
+                            </div>
+                        </div>
+                        {% if not node.is_leaf_node %}
+                            <ul class="children" class="clearfix">
+                                {{ children }}
+                            </ul>
+                        {% endif %}
+                    </li>
+                {% endrecursetree %}
+            </ul>
+        </div>
+{% endblock %}
+
+{% block sidebar %}
+{% staticpages_app_list %}
+{% load_menus %}
+{% if app_list %}
+    <div id="apps">
+        <ul class="object-tools">
+            <li><a href="{% url admin:staticpages_page_add %}">Add New Page</a></li>
+        </ul>
+        <div class="module">
+            <table>
+                <caption>Menus</caption>
+                <tbody>
+                    {% for menu in navigation_menus %}
+                        <tr>
+                            <th scope="row">
+                                <a href="{{ menu.get_edit_url }}">{{ menu.name }}</a>
+                            </th>
+                            <td>
+                                <a class="changelink" href="{{ menu.get_edit_url }}">Change</a>
+                            </td>
+<!--                             <td>
+                                <a class="deletelink" href="{{ menu.get_delete_url }}">Delete</a>
+                            </td>
+ -->                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div class="add-row clearfix">
+                <a href="{{ navigation_menu_model.get_add_url }}">Add</a>
+            </div>
+        </div>
+    {% for app in app_list %}
+        <div class="module">
+        <table summary="{% blocktrans with app.name as name %}Models available in the {{ name }} application.{% endblocktrans %}">
+        <caption><a href="{{ app.app_url }}" class="section">{% blocktrans with app.name as name %}{{ name }}{% endblocktrans %}</a></caption>
+        {% for model in app.models %}
+            <tr>
+            {% if model.perms.change %}
+                <th scope="row"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>
+            {% else %}
+                <th scope="row">{{ model.name }}</th>
+            {% endif %}
+
+            {% if model.perms.add %}
+                <td><a href="{{ model.admin_url }}add/" class="addlink">{% trans 'Add' %}</a></td>
+            {% else %}
+                <td>&nbsp;</td>
+            {% endif %}
+
+            {% if model.perms.change %}
+                <td><a href="{{ model.admin_url }}" class="changelink">{% trans 'Change' %}</a></td>
+            {% else %}
+                <td>&nbsp;</td>
+            {% endif %}
+            </tr>
+        {% endfor %}
+        </table>
+        </div>
+    {% endfor %}
+    </div>
+{% else %}
+    <p>{% trans "You don't have permission to edit anything." %}</p>
+{% endif %}
+</div>
+{% endblock %}
