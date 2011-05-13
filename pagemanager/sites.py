@@ -1,7 +1,7 @@
 from django.contrib.contenttypes.generic import GenericStackedInline
 from django.core.exceptions import ImproperlyConfigured
 
-from staticpages.exceptions import AlreadyRegistered, NotRegistered
+from pagemanager.exceptions import AlreadyRegistered, NotRegistered
 
 
 class StaticPageSite(object):

@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.db.models import get_model
 
-from util import get_staticpage_model, get_staticpage_modeladmin
+from pagemanager.util import get_staticpage_model, get_staticpage_modeladmin
 
 STATICPAGES_DEFAULT_TEMPLATE = getattr(settings,
     'STATICPAGES_DEFAULT_TEMPLATE',

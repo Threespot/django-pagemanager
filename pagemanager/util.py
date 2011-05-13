@@ -1,8 +1,8 @@
 from django.core.exceptions import ImproperlyConfigured
 from django.conf import settings
 
-from staticpages import PageAdmin
-from staticpages.models import Page
+from pagemanager import PageAdmin
+from pagemanager.models import Page
 
 def get_staticpage_model():
     """

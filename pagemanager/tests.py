@@ -1,9 +1,9 @@
 from django.db import models
 from django.utils import unittest
 
-import staticpages
-from staticpages.exceptions import AlreadyRegistered, NotRegistered
-from staticpages.models import PageLayout
+import pagemanager
+from pagemanager.exceptions import AlreadyRegistered, NotRegistered
+from pagemanager.models import PageLayout
 
 
 class HomepageLayout(PageLayout):

@@ -1,7 +1,7 @@
 from django.views.generic import DetailView
 from django.http import Http404
 
-import app_settings
+from pagemanager import app_settings
 
 model = app_settings.STATICPAGES_PAGE_MODEL
 

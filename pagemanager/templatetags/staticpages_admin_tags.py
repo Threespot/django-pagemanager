@@ -5,7 +5,7 @@ from django.utils.safestring import mark_safe
 from django.utils.text import capfirst
 
 from navigation.models import Menu
-from staticpages.app_settings import STATICPAGES_PAGE_MODEL
+from pagemanager.app_settings import STATICPAGES_PAGE_MODEL
 
 register = template.Library()
 
