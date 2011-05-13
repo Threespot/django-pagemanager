@@ -1,0 +1,11 @@
+{% load staticpages_admin_tags %}
+
+{% load_obj %}
+
+<div class="breadcrumbs">
+    <a href="{% url admin:index %}">Home</a> &rsaquo;
+    {% for ancestor in page.get_ancestors %}
+        <a href="{{ ancestor.get_edit_url }}">{{ ancestor.title }}</a> &rsaquo;
+    {% endfor %}
+    {{ page.title }}
+</div>

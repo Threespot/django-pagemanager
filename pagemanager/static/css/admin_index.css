@@ -1,0 +1,262 @@
+.dashboard #content{
+    min-width: 950px;
+    max-width: 1250px;
+}
+
+#content-main{
+    float: none;
+}
+#staticpages{
+    width: 69%;
+    float: left;
+}
+#apps{
+    width: 30%;
+    float: right;
+}
+
+.clearfix:before, .clearfix:after{
+    content: "\0020";
+    display: block;
+    height: 0;
+    overflow: hidden;
+}
+.clearfix:after{
+    clear: both;
+}
+
+#tree .data{
+    background: #FFF url(../img/nodebg.png) repeat-x bottom;
+    border: 1px solid #DEDEDE;
+    border-width: 1px 0 1px 1px;
+    display: block;
+    width: 100%;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    margin: 0 -2px -1px 0;
+}
+
+
+
+#tree .drag{
+    display: none;
+}
+#tree .data,
+#tree .drag,
+.jstree-icon{
+    float: left;
+}
+.node > ul{
+    clear: both;
+}
+
+#tree{
+    padding: 0 0 100px 18px;
+    border: 1px solid #DEDEDE;
+    background: #FFF;
+}
+    #tree > ul{
+        margin-top: -1px;
+    }
+.node{
+    position: relative;
+    margin-left: 9px !important;
+}
+    .node .node{
+        margin-left: 26px !important;
+    }
+    .node > .jstree-icon{
+        position: absolute;
+        top: 7px;
+        left: -22px;
+    }
+    .node > .drag{
+        position: absolute;
+        top: 4px;
+        left: 4px;
+        cursor: move;
+        display: none;
+        height: 26px;
+        width: 12px;
+        background: url(../img/draghandle.gif) no-repeat;
+        text-indent: -999em;
+        overflow: hidden;
+        z-index: 5;
+        padding: 0;
+    }
+    .node > .data{
+        text-shadow: 1px 1px 1px #FFF;
+        filter: dropshadow(color=#ffffff, offx=1, offy=1);
+        z-index: 6;
+    }
+        .node > .data > a{
+            height: 31px;
+            padding: 0 5px 0 22px;
+            display: inline-block;
+            color: #5B80B2;
+            font-weight: bold;
+            float: left;
+            background: url(../img/draghandle.gif) no-repeat 4px 4px;
+            cursor: move;
+        }
+            .dragging .node > .data > a{
+                cursor: pointer;
+            }
+            .node > .data > a span{
+                cursor: pointer;
+                display: inline-block;
+                padding-top: 8px;
+                height: 20px;
+            }
+            .node > .data > a span:hover{
+                color: #036;
+                text-decoration: underline;
+            }
+
+.dragging,
+.dragging .node > .drag{
+    cursor: not-allowed;
+}
+.dragging.good-drop,
+.dragging.good-drop .node > .drag{
+    cursor: pointer;
+}
+
+#treesearch{
+    background: #E1E1E1 url(../img/nav-bg.gif) top left repeat-x;
+    border: 1px solid #DEDEDE;
+    border-bottom-width: 0;
+    padding: 3px;
+}
+    #treesearch label{
+        position: relative;
+        top: 5px;
+        left: 2px;
+        margin-right: 2px;
+    }
+
+.jstree-default .jstree-no-dots .jstree-closed > ins,
+.jstree-default .jstree-no-dots .jstree-open > ins{
+    cursor: pointer;
+    opacity: 0.75;
+}
+    .jstree-default .jstree-no-dots .jstree-closed > ins:hover,
+    .jstree-default .jstree-no-dots .jstree-open > ins:hover{
+        opacity: 1;
+    }
+.jstree-default .jstree-no-dots .jstree-closed > ins{
+    background: url(../img/plus.png);
+}
+.jstree-default .jstree-no-dots .jstree-open > ins{
+    background: url(../img/minus.png);
+}
+.jstree-default .node.jstree-search{
+    font-style: normal;
+}
+.node.jstree-search > .data{
+    background: #B9D1EC url(../img/search.png) repeat-x bottom !important;
+    text-shadow: 1px 1px 1px #688EBC;
+    filter: dropshadow(color=#688EBC, offx=1, offy=1);
+}
+    .node.jstree-search > .data > a{
+        color: #FFF;
+        font-style: normal;
+    }
+        .node.jstree-search > .data > a:hover{
+
+        }
+
+    .node.jstree-search > .drag{
+        background-image: url(../img/search_drag.gif);
+    }
+
+
+#jstree-marker.jstree-default{
+}
+    #jstree-marker.jstree-default.inside{
+        background: url(../img/inside.png) no-repeat 0 0 !important;
+        width: 14px;
+        height: 14px;
+    }
+    #jstree-marker.jstree-default.before,
+    #jstree-marker.jstree-default.after{
+        background: url(../img/insert.png) no-repeat 0 0 !important;
+        width: 18px;
+        height: 18px;
+    }
+
+
+#apps .object-tools{
+    margin: 6px 0 12px;
+    float: right;
+}
+#apps .module{
+    clear: both;
+}
+
+.jstree .actions{
+    float: right;
+    border-left: 1px solid #EEE;
+    padding: 0 12px;
+    background: rgba(255, 255, 255, 0.5);
+    display: none;
+}
+    .jstree .data:hover .actions{
+        display: block;
+    }
+    .node.jstree-search > .data > .actions{
+        border-left-color: rgba(255, 255, 255, 0.5);
+        background: rgba(255, 255, 255, 0.25);
+    }
+    .jstree .actions a{
+        float: left;
+        padding: 8px 0 0 15px;
+        height: 23px;
+        font-size: 10px;
+        display: inline-block;
+        color: #555;
+        margin-left: 18px;
+    }
+        .node.jstree-search > .data > .actions a{
+            color: #183c61;
+            text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.8);
+        }
+        .jstree .actions a:hover{
+            color: #222;
+            text-decoration: underline;
+        }
+        .jstree .actions a:first-child{
+            margin-left: 0;
+        }
+        .jstree .actions a.edit{
+            background: url(../img/change.gif) no-repeat left;
+        }
+        .jstree .actions a.add{
+            background: url(../img/add.gif) no-repeat left;
+        }
+        .jstree .actions a.delete{
+            background: url(../img/delete.gif) no-repeat left;
+        }
+
+.clearfix:before,
+.clearfix:after{
+    content: "\0020";
+    display: block;
+    height: 0;
+    overflow: hidden;
+}
+.add-row{
+    background: url("../img/nav-bg.gif") repeat-x scroll left top #E1E1E1;
+    color: #666666;
+    padding: 5px 12px 4px 5px;
+}
+    .add-row a{
+        float: right;
+        background: url("../img/add.gif") no-repeat scroll 0 50% transparent;
+        font-size: 11px;
+        outline: 0 none;
+        padding-left: 14px;
+        color: #5B80B2;
+        text-decoration: none;
+    }

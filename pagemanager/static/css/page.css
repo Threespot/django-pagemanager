@@ -1,0 +1,183 @@
+.attributes,
+.publish{
+    width: 33%;
+    float: right;
+    clear: right;
+    margin: 12px 0 20px;
+    position: relative;
+}
+.page-fields{
+    position: relative;
+}
+.page-fields > fieldset{
+    border: 0;
+}
+.page-fields > fieldset > .form-row{
+    padding: 0;
+    border: 0;
+}
+.submit-row{
+    clear: both;
+}
+.main{
+    margin: 10px 0 25px 0;
+    width: 64%;
+    float: left;
+}
+.basics{
+    border: 0;
+}
+    .basics > div{
+        border: 0;
+        padding: 8px;
+    }
+    .basics .add{}
+    .basics .add input{
+        position: relative;
+        top: -4px;
+        margin-left: 10px;
+    }
+    .basics .title{
+        padding: 0;
+    }
+        .basics .title input{
+            display: block;
+            width: 611px;
+            padding: 5px 6px;
+            font-size: 17px;
+        }
+
+form{
+    width: 977px;
+}
+
+form .layout.aligned ul{
+    padding: 0;
+    margin: 0;
+}
+form .layout.aligned li{
+    list-style: none;
+    width: 150px;
+    padding: 0 0 0 23px;
+    float: left;
+    position: relative;
+    margin-right: 30px;
+}
+    form .layout.aligned li:nth-child(3n){
+        margin-right: 0;
+    }
+    form .layout.aligned li input{
+        position: absolute;
+        top: 3px;
+        left: 0;
+    }
+    form .layout.aligned li label{
+        cursor: pointer;
+    }
+    form .layout.aligned li img{
+        border: 1px solid #E6E6E6;
+    }
+    form .layout.aligned li p{
+        padding: 0;
+        margin: 5px 0 0;
+    }
+
+#id_parent,
+.parent select{
+    width: 298px;
+}
+    #add_id_parent,
+    .parent .add-another{
+        display: none;
+    }
+
+.dynamic-faqitem_set{
+    border-bottom: 1px solid #CCC;
+}
+.dynamic-faqitem_set .form-row{
+    border: 0;
+}
+.dynamic-faqitem_set textarea{
+    width: 591px !important;
+}
+.sorting .form-row{
+    display: none;
+}
+.sorting .dynamic-faqitem_set{
+    border: 0;
+}
+.inline-related{
+    position: relative;
+}
+.inline-related fieldset > span{
+    position: absolute;
+    top: 8px;
+    right: 12px;
+}
+.form-row.delete{
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    padding: 0;
+}
+.colM .aligned .vLargeTextField, .colM .aligned .vXMLLargeTextField{
+    width: 617px;
+}
+
+#faqitem_set-group h2 a{
+    display: inline-block;
+    margin-left: 10px;
+    float: right;
+}
+.dynamic-faqitem_set .form-row.question{
+    padding: 12px 12px 0;
+}
+    .dynamic-faqitem_set .form-row.question label{
+        width: 66px;
+    }
+    .dynamic-faqitem_set .form-row.question input{
+        width: 400px;
+    }
+.summary{
+    background: #FFF url(../img/nodebg.png) repeat-x bottom;
+    border-bottom: 1px solid #DEDEDE;
+    display: block;
+    font-size: 11px;
+    font-weight: bold;
+    color: #555;
+    cursor: move;
+}
+    .summary span{
+        -moz-box-sizing: border-box;
+        -webkit-box-sizing: border-box;
+        box-sizing: border-box;
+        height: 31px;
+        padding: 8px 0 0 22px;
+        display: block;
+        background: url(../img/draghandle.gif) no-repeat 4px 4px;
+    }
+    .ui-sortable-helper .summary{
+        border-top: 1px solid #DEDEDE;
+    }
+
+.clearfix:before,
+.clearfix:after{
+    content: "\0020";
+    display: block;
+    height: 0;
+    overflow: hidden;
+}
+
+/* Hide elements visually, allow in screen readers */
+.basics h2,
+.basics .title label,
+.basics .slug.active label{
+    border: 0;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px;
+}

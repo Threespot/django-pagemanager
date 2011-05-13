@@ -1,0 +1,47 @@
+    .basics .slug p,
+    .basics .slug .object-tools,
+    .basics .slug label,
+    .basics .slug input{
+        float: left;
+    }
+    .basics .slug .form{
+        display: none;
+    }
+    .basics .slug p{
+        margin: 0;
+        padding: 0;
+        color: #777;
+    }
+    .basics .slug .object-tools{
+        margin: 0 0 0 10px;
+        padding: 0;
+    }
+
+    .basics .slug.open{
+
+    }
+        .basics .slug.open .text{
+            display: none;
+        }
+        .basics .slug.open .form{
+            display: inline-block;
+            margin: -11px 0 0 10px;
+            position: relative;
+            top: 7px;
+        }
+        .basics .slug.open .object-tools{
+            position: relative;
+            top: 4px;
+        }
+        .basics .slug.open > div > .object-tools{ display: none; }
+
+.basics .slug.active label{
+    border: 0;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px;
+}

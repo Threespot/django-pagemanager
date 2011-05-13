@@ -1,0 +1,6 @@
+<div class="add clearfix">
+    <p><strong>URL: </strong> {{ obj.path_prefix }}<b class="text">{{ obj.slug }}</b></p>
+    {% if not line.fields|length_is:'1' and not field.is_readonly %}{{ field.errors }}{% endif %}
+    {{ field.label_tag }}
+    {{ field.field }}
+</div>

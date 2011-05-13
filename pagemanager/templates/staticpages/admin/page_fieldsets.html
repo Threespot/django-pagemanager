@@ -1,0 +1,40 @@
+{% if fieldset.name == "Basics" %}
+
+    <div class="main">
+
+        {% include "staticpages/admin/fieldsets/basics.html" %}
+
+        {% if add %}
+            <fieldset class="module aligned  layout">
+                <h2>Layout</h2>
+                <div class="form-row parent">
+                    <ul class="clearfix">
+                    {% for layout in page_layouts %}
+                        {% with layout.staticpages_meta as meta %}
+                        <li>
+                            <input type="radio" name="layout" id="{{ layout.html_id }}" value="{{ meta.name }}" {% if request.POST.layout == meta.name  %} checked="checked"{% endif %}{% if not request.POST and forloop.first %} checked="checked"{% endif %} />
+                            <label for="{{ layout.html_id }}">
+                                <img src="{{ STATIC_URL }}{{ meta.thumbnail }}" alt="{{ meta.name }}" />
+                                <p>{{ meta.name }}</p
+                            </label>
+                        </li>
+                        {% endwith %}
+                    {% endfor %}
+                    </ul>
+                </div>
+            </fieldset>
+        {% endif %}
+
+    </div>
+
+{% else %}
+
+    {% if fieldset.name == "Attributes" %}
+        {% include "staticpages/admin/fieldsets/attributes.html" %}
+    {% else %}
+        {% if fieldset.name == "Publish" %}
+            {% include "staticpages/admin/fieldsets/default.html" %}
+        {% endif %}
+    {% endif %}
+
+{% endif %}

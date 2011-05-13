@@ -1,0 +1,11 @@
+{% load staticpages_admin_tags %}
+
+{% load_obj %}
+
+<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/slug.css" />
+
+<p><strong>URL: </strong> {% if page.path_prefix %}/{{ page.path_prefix }}{% endif %}/<b class="text">{{ page.slug }}</b></p>
+<ul class="object-tools"></ul>
+{% if not line.fields|length_is:'1' and not field.is_readonly %}{{ field.errors }}{% endif %}
+{{ field.label_tag }}
+{{ field.field }}

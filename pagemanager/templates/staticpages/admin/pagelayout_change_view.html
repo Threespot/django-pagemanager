@@ -1,0 +1,108 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_modify adminmedia staticpages_admin_tags %}
+{% load url from future %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <script type="text/javascript" src="{{ STATIC_URL }}js/jui-sortable.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/change.js"></script>
+    <script type="text/javascript">
+        (function($){
+            $(function(){
+                $('.publish, .attributes').css('top', -1 * $('.main').outerHeight(true));
+
+                var movePageFields = $('.publish').outerHeight(true) + $('.attributes').outerHeight(true);
+                movePageFields = movePageFields - $('.main').outerHeight();
+                $('.page-fields').css('top', -1 * movePageFields);
+                $('.page-fields').css('margin-bottom', -1 * movePageFields);
+            });
+        })(django.jQuery);
+
+    </script>
+{% endblock %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/page.css" />
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/pagelayout.css" />
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/slug.css" />
+    <style>
+        .module{
+          clear: both;
+        }
+    </style>
+{% endblock %}
+
+{% block breadcrumbs %}
+    {% if not is_popup %}
+        {% include "staticpages/admin/breadcrumb.html" with page=page %}
+    {% endif %}
+{% endblock %}
+
+{% block content_title %}{% endblock %}
+
+
+{% block content %}
+
+    <div id="content-main">
+
+        {# Object Tools #}
+        {% block object-tools %}
+            {% if change %}
+                {% if not is_popup %}
+                    <ul class="object-tools">
+                        {% block object-tools-items %}
+                            <li><a href="history/" class="historylink">{% trans "History" %}</a></li>
+                        {% endblock %}
+                    </ul>
+                {% endif %}
+            {% endif %}
+        {% endblock %}
+
+
+        <form {% if has_file_field %}enctype="multipart/form-data" {% endif %}action="{{ form_url }}" method="post" id="{{ opts.module_name }}_form">
+            {% csrf_token %}
+            {% block form_top %}{% endblock %}
+
+            <div>
+
+                {% if is_popup %}<input type="hidden" name="_popup" value="1" />{% endif %}
+                {% if save_on_top %}{% submit_row %}{% endif %}
+
+                {% if errors %}
+                    <p class="errornote">{% blocktrans count errors|length as counter %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktrans %}</p>
+                    {{ adminform.form.non_field_errors }}
+                {% endif %}
+
+                {% block field_sets %}
+
+                    <div class="page">
+                        {% for inline_admin_formset in inline_admin_formsets %}
+                            {% if inline_admin_formset.opts.page_inline %}
+                                {% include inline_admin_formset.opts.template %}
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+
+                    <div class="page-fields main">
+                        {% for fieldset in adminform %}
+                            {% include "admin/includes/fieldset.html" %}
+                        {% endfor %}
+                        {% for inline_admin_formset in inline_admin_formsets %}
+                            {% if not inline_admin_formset.opts.page_inline %}
+                                {% include inline_admin_formset.opts.template %}
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+
+                {% endblock %}
+
+                {% submit_row %}
+
+            </div>
+
+        </form>
+
+    </div>
+
+{% endblock %}
