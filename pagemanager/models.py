@@ -131,8 +131,8 @@ class PageLayoutBase(models.base.ModelBase):
     """
     def __new__(cls, name, bases, attrs):
         """
-        Translates the StaticPageMeta class to an instance of PageLayoutMeta,
-        accessible as self._layout_meta in any PageLayout subclasses.
+        Translates the PageManagerMeta class to an instance of PageLayoutMeta,
+        accessible as self._pagemanager_meta in any PageLayout subclasses.
         """
         opts = PageLayoutMeta(attrs.pop('PageManagerMeta', None))
         attrs['_pagemanager_meta'] = opts

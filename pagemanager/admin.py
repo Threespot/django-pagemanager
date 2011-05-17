@@ -95,7 +95,7 @@ for page_layout in pagemanager_site._registry:
                 return HttpResponseRedirect(reverse('admin:index'))
 
 
-    # Overrides provided in the PageLayout subclass' StaticPageMeta class
+    # Overrides provided in the PageLayout subclass' PageManagerMeta class
     meta = page_layout._meta
     pm_meta = page_layout._pagemanager_meta
 

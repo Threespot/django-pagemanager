@@ -9,12 +9,6 @@ class PageView(DetailView):
     context_object_name = 'page'
     model = app_settings.PAGEMANAGER_PAGE_MODEL
 
-    # def get_context_data(self, **kwargs):
-    #     context = super(StaticPageView, self).get_context_data(**kwargs)
-    #     import pdb; pdb.set_trace()
-    #     context.update(context['object'].page_layout.__class__.context)
-    #     return context
-
     def get_template_names(self):
         if self.template_name:
             return self.template_name
