@@ -8,8 +8,8 @@ from pagemanager.models import PageLayout
 
 class HomepageLayout(PageLayout):
     name = 'Homepage'
-    thumbnail = 'staticpages/homepage.jpg'
-    template_file = 'staticpages/homepage.html'
+    thumbnail = 'pagemanager/homepage.jpg'
+    template_file = 'pagemanager/homepage.html'
     context = {'foo': 'bar'}
     components = ['blog', 'news']
     body = models.TextField()
@@ -34,7 +34,7 @@ class ListingPageLayout(PageLayout):
 
 class PageManagerSiteTest(unittest.TestCase):
     def setUp(self):
-        self.site = staticpages.sites.PageManagerSite()
+        self.site = pagemanager.sites.PageManagerSite()
 
     def test_initilization(self):
         self.assertTrue(self.site._registry == [])
@@ -53,21 +53,21 @@ class PageLayoutModelTest(unittest.TestCase):
 
     def test_initialization(self):
         self.assertTrue(isinstance(
-            staticpages.pagemanager_site,
-            staticpages.sites.PageManagerSite
+            pagemanager.pagemanager_site,
+            pagemanager.sites.PageManagerSite
         ))
 
     def test_get_thumbnail(self):
         self.assertTrue(self.page_layout_instance.get_thumbnail() == None)
         self.assertTrue(self.test_layout_instance.get_thumbnail() == \
-            'staticpages/homepage.jpg')
+            'pagemanager/homepage.jpg')
         self.assertTrue(self.test_layout_instance_get.get_thumbnail() == \
             'listing.jpg')
 
     def test_get_template_file(self):
         self.assertTrue(self.page_layout_instance.get_template_file() == None)
         self.assertTrue(self.test_layout_instance.get_template_file() == \
-            'staticpages/homepage.html')
+            'pagemanager/homepage.html')
         self.assertTrue(self.test_layout_instance_get.get_template_file() == \
             'listing.html')
 
@@ -88,7 +88,7 @@ class PageLayoutModelTest(unittest.TestCase):
 
 class RegistrationTest(unittest.TestCase):
     def setUp(self):
-        self.site = staticpages.sites.PageManagerSite()
+        self.site = pagemanager.sites.PageManagerSite()
         self.test_layout = HomepageLayout
 
     def test_registration(self):
@@ -103,21 +103,21 @@ class RegistrationTest(unittest.TestCase):
     def test_prevent_reregistration(self):
         self.site.register(self.test_layout)
         self.assertRaises(
-            staticpages.sites.AlreadyRegistered,
+            pagemanager.sites.AlreadyRegistered,
             self.site.register,
             self.test_layout
         )
 
     def test_prevent_abstract_registration(self):
         self.assertRaises(
-            staticpages.sites.ImproperlyConfigured,
+            pagemanager.sites.ImproperlyConfigured,
             self.site.register,
             PageLayout
         )
 
     def test_prevent_unregistration_of_unregistered(self):
         self.assertRaises(
-            staticpages.sites.NotRegistered,
+            pagemanager.sites.NotRegistered,
             self.site.unregister,
             self.test_layout
         )

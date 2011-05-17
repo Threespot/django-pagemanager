@@ -41,7 +41,7 @@
                         'animation': 0,
                         'html_titles': true,
                         'initially_open': [
-                            {% for node in staticpages_pages %}
+                            {% for node in pagemanager_pages %}
                                 {% if node.get_ancestors|length < 1 %}
                                     '#{{ node.node_id }}',
                                 {% endif %}
@@ -81,7 +81,7 @@
                                 'cache': false,
                                 'data': ajax_data,
                                 'type': 'POST',
-                                'url': '/admin/staticpages/page/parentsorders/'
+                                'url': '/admin/pagemanager/page/parentsorders/'
                             });
 
                         }
@@ -145,7 +145,7 @@
 
 {% block content %}
     <div id="content-main" class="clearfix">
-        <div id="staticpages">
+        <div id="pagemanager">
             <form id="treesearch">
                 <label for="searchbar"><img src="/static/admin/img/admin/icon_searchbox.png" alt="Search"></label>
                 <input type="text" size="40" name="q" value="" id="searchbar">
@@ -154,7 +154,7 @@
             </form>
             <ul class="tree">
                 {% load_pages %}
-                {% recursetree staticpages_pages %}
+                {% recursetree pagemanager_pages %}
                     <li id="{{ node.node_id }}" data-node_id="{{ node.pk }}" data-parent_id="{{ node.parent.pk }}" data-order="{{ node.order }}" class="clearfix node">
                         <div class="data">
                             <a href="{{ node.get_absolute_url }}"><span>{{ node.title }}</span></a>
@@ -176,7 +176,7 @@
 {% endblock %}
 
 {% block sidebar %}
-{% staticpages_app_list %}
+{% pagemanager_app_list %}
 {% if app_list %}
     <div id="apps">
         <ul class="object-tools">

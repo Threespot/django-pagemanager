@@ -10,10 +10,10 @@
                 <div{% if not line.fields|length_is:'1' %} class="field-box clearfix{% if not field.is_readonly and field.errors %} errors{% endif %}"{% endif %}>
                     {% if field.field.name == "slug" %}
                         {% if add %}
-                            {% include "staticpages/admin/fields/slug_add.html" %}
+                            {% include "pagemanager/admin/fields/slug_add.html" %}
                         {% endif %}
                         {% if change %}
-                            {% include "staticpages/admin/fields/slug_change.html" %}
+                            {% include "pagemanager/admin/fields/slug_change.html" %}
                         {% endif %}
                     {% else %}
                         {% if not line.fields|length_is:'1' and not field.is_readonly %}{{ field.errors }}{% endif %}

@@ -47,7 +47,7 @@
                 {% block field_sets %}
                     <div class="fieldsets clearfix">
                         {% for fieldset in adminform %}
-                            {% include "staticpages/admin/page_fieldsets.html" %}
+                            {% include "pagemanager/admin/page_fieldsets.html" %}
                         {% endfor %}
                     </div>
                 {% endblock %}

@@ -2,7 +2,7 @@
 
     <div class="main">
 
-        {% include "staticpages/admin/fieldsets/basics.html" %}
+        {% include "pagemanager/admin/fieldsets/basics.html" %}
 
         {% if add %}
             <fieldset class="module aligned  layout">
@@ -30,10 +30,10 @@
 {% else %}
 
     {% if fieldset.name == "Attributes" %}
-        {% include "staticpages/admin/fieldsets/attributes.html" %}
+        {% include "pagemanager/admin/fieldsets/attributes.html" %}
     {% else %}
         {% if fieldset.name == "Publish" %}
-            {% include "staticpages/admin/fieldsets/default.html" %}
+            {% include "pagemanager/admin/fieldsets/default.html" %}
         {% endif %}
     {% endif %}
 

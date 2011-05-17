@@ -33,8 +33,8 @@ def load_obj(parser, token):
 
 class PagesNode(template.Node):
     def render(self, context):
-        context['staticpages_pages'] = PAGEMANAGER_PAGE_MODEL.objects.all()
-        context['staticpages_page_model'] = PAGEMANAGER_PAGE_MODEL
+        context['pagemanager_pages'] = PAGEMANAGER_PAGE_MODEL.objects.all()
+        context['pagemanager_page_model'] = PAGEMANAGER_PAGE_MODEL
         return ''
 
 @register.tag
@@ -93,7 +93,7 @@ class AppListNode(template.Node):
         return ''
 
 @register.tag
-def staticpages_app_list(parser, token):
+def pagemanager_app_list(parser, token):
     """
 
     """
