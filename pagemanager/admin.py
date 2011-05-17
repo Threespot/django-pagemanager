@@ -9,13 +9,13 @@ from django.utils.encoding import force_unicode
 from reversion.admin import VersionAdmin
 
 from pagemanager import PageAdmin
-from pagemanager.app_settings import STATICPAGES_PAGE_MODEL, STATICPAGES_PAGE_MODELADMIN
+from pagemanager.app_settings import PAGEMANAGER_PAGE_MODEL, PAGEMANAGER_PAGE_MODELADMIN
 from pagemanager.models import Page
 from pagemanager.sites import pagemanager_site
 
 
 # PageAdmin located in pagemanager.init to prevent a circular import
-admin.site.register(STATICPAGES_PAGE_MODEL, STATICPAGES_PAGE_MODELADMIN)
+admin.site.register(PAGEMANAGER_PAGE_MODEL, PAGEMANAGER_PAGE_MODELADMIN)
 
 
 class PageInline(generic.GenericStackedInline):
@@ -28,7 +28,7 @@ class PageInline(generic.GenericStackedInline):
     extra = 1
     fieldsets = PageAdmin.fieldsets
     max_num = 1
-    model = STATICPAGES_PAGE_MODEL
+    model = PAGEMANAGER_PAGE_MODEL
     template = 'pagemanager/admin/inlines/page_inline.html'
     page_inline = True
 

@@ -6,7 +6,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.utils.safestring import mark_safe
 from django.utils.text import capfirst
 
-from pagemanager.app_settings import STATICPAGES_PAGE_MODEL
+from pagemanager.app_settings import PAGEMANAGER_PAGE_MODEL
 
 register = template.Library()
 
@@ -33,8 +33,8 @@ def load_obj(parser, token):
 
 class PagesNode(template.Node):
     def render(self, context):
-        context['staticpages_pages'] = STATICPAGES_PAGE_MODEL.objects.all()
-        context['staticpages_page_model'] = STATICPAGES_PAGE_MODEL
+        context['staticpages_pages'] = PAGEMANAGER_PAGE_MODEL.objects.all()
+        context['staticpages_page_model'] = PAGEMANAGER_PAGE_MODEL
         return ''
 
 @register.tag

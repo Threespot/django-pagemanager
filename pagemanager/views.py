@@ -3,11 +3,11 @@ from django.http import Http404
 
 from pagemanager import app_settings
 
-model = app_settings.STATICPAGES_PAGE_MODEL
+model = app_settings.PAGEMANAGER_PAGE_MODEL
 
-class StaticPageView(DetailView):
+class PageView(DetailView):
     context_object_name = 'page'
-    model = app_settings.STATICPAGES_PAGE_MODEL
+    model = app_settings.PAGEMANAGER_PAGE_MODEL
 
     # def get_context_data(self, **kwargs):
     #     context = super(StaticPageView, self).get_context_data(**kwargs)
@@ -18,7 +18,7 @@ class StaticPageView(DetailView):
     def get_template_names(self):
         if self.template_name:
             return self.template_name
-        return [app_settings.STATICPAGES_DEFAULT_TEMPLATE]
+        return [app_settings.PAGEMANAGER_DEFAULT_TEMPLATE]
 
     @staticmethod
     def zero_is_none(n):

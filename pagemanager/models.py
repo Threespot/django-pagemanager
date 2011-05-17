@@ -14,7 +14,7 @@ class Page(MPTTModel):
     The model of a page.
 
     Subclasses of this model can be used in its stead, defined in the
-    STATICPAGES_PAGE_MODEL setting.
+    PAGEMANAGER_PAGE_MODEL setting.
     """
     parent = TreeForeignKey('self', null=True, blank=True,
         related_name='children')
