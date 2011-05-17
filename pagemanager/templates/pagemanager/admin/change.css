@@ -1,6 +1,6 @@
 {% extends "admin/change_form.html" %}
 
-{% load i18n admin_modify adminmedia staticpages_admin_tags pdb_tags %}
+{% load i18n admin_modify adminmedia staticpages_admin_tags %}
 {% load url from future %}
 
 {% load_obj %}

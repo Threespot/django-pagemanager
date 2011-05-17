@@ -1,6 +1,8 @@
 from django import template
 from django.contrib.admin.sites import AdminSite, site
 from django.contrib.contenttypes.models import ContentType
+from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from django.utils.safestring import mark_safe
 from django.utils.text import capfirst
 
@@ -46,6 +48,14 @@ def load_pages(parser, token):
 class AppListNode(template.Node):
 
     def render(self, context):
+
+        if 'django.core.context_processors.request' not in \
+            settings.TEMPLATE_CONTEXT_PROCESSORS:
+            raise ImproperlyConfigured(
+                'The TEMPLATE_CONTEXT_PROCESSORS setting must contain '
+                'django.core.context_processors.request'
+            )
+
         app_dict = {}
         request = context['request']
         user = request.user

@@ -97,7 +97,7 @@ for page_layout in static_page_site._registry:
 
     # Overrides provided in the PageLayout subclass' StaticPageMeta class
     meta = page_layout._meta
-    sp_meta = page_layout._pagemanager_meta
+    sp_meta = page_layout._staticpages_meta
 
     if sp_meta.formfield_overrides:
         PageLayoutAdmin.formfield_overrides.update(sp_meta.formfield_overrides)
