@@ -10,7 +10,7 @@
                 <div class="form-row parent">
                     <ul class="clearfix">
                     {% for layout in page_layouts %}
-                        {% with layout.staticpages_meta as meta %}
+                        {% with layout.pagemanager_meta as meta %}
                         <li>
                             <input type="radio" name="layout" id="{{ layout.html_id }}" value="{{ meta.name }}" {% if request.POST.layout == meta.name  %} checked="checked"{% endif %}{% if not request.POST and forloop.first %} checked="checked"{% endif %} />
                             <label for="{{ layout.html_id }}">

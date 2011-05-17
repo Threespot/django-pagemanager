@@ -100,7 +100,7 @@ class Page(MPTTModel):
 class PageLayoutMeta(object):
     """
     A special Meta class for PageLayout subclasses; all properties defined
-    herein are ultimately added to PageLayout._staticpages_meta
+    herein are ultimately added to PageLayout._pagemanager_meta
     """
     name = None
     thumbnail = None
@@ -134,13 +134,13 @@ class PageLayoutBase(models.base.ModelBase):
         Translates the StaticPageMeta class to an instance of PageLayoutMeta,
         accessible as self._layout_meta in any PageLayout subclasses.
         """
-        opts = PageLayoutMeta(attrs.pop('StaticPagesMeta', None))
-        attrs['_staticpages_meta'] = opts
+        opts = PageLayoutMeta(attrs.pop('PageManagerMeta', None))
+        attrs['_pagemanager_meta'] = opts
 
         # Make public pointer for templating
-        def get_staticpages_meta(self):
-            return self._staticpages_meta
-        attrs['staticpages_meta'] = get_staticpages_meta
+        def get_pagemanager_meta(self):
+            return self._pagemanager_meta
+        attrs['pagemanager_meta'] = get_pagemanager_meta
 
         return super(PageLayoutBase, cls).__new__(cls, name, bases, attrs)
 
@@ -171,8 +171,8 @@ class PageLayout(models.Model):
         can be done here. Values here override values defined in the
         PageLayout.thumbnail property.
         """
-        if self._staticpages_meta.thumbnail:
-            return self._staticpages_meta.thumbnail
+        if self._pagemanager_meta.thumbnail:
+            return self._pagemanager_meta.thumbnail
         return None
 
     def get_template_file(self, instance=None):
@@ -181,8 +181,8 @@ class PageLayout(models.Model):
         it can be done here. Values here override values defined in the
         PageLayout.template_file property.
         """
-        if self._staticpages_meta.template_file:
-            return self._staticpages_meta.template_file
+        if self._pagemanager_meta.template_file:
+            return self._pagemanager_meta.template_file
         return None
 
     def get_context_data(self, instance=None):
@@ -191,8 +191,8 @@ class PageLayout(models.Model):
         be done here. Values here override values defined in the
         PageLayout.context property.
         """
-        if self._staticpages_meta.context:
-            return self._staticpages_meta.context
+        if self._pagemanager_meta.context:
+            return self._pagemanager_meta.context
         return None
 
     @property
@@ -200,4 +200,4 @@ class PageLayout(models.Model):
         """
         Returns a value that can be used for the layout's HTML ID.
         """
-        return slugify(self._staticpages_meta.name)
+        return slugify(self._pagemanager_meta.name)

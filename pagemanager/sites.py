@@ -46,7 +46,7 @@ class PageManagerSite(object):
         Returns a PageLayout class from the registry based on a passed name.
         """
         for layout in self._registry:
-            if layout._staticpages_meta.name == name:
+            if layout._pagemanager_meta.name == name:
                 return layout
         return None
 

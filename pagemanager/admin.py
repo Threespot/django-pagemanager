@@ -97,19 +97,19 @@ for page_layout in pagemanager_site._registry:
 
     # Overrides provided in the PageLayout subclass' StaticPageMeta class
     meta = page_layout._meta
-    sp_meta = page_layout._staticpages_meta
+    pm_meta = page_layout._pagemanager_meta
 
-    if sp_meta.formfield_overrides:
-        PageLayoutAdmin.formfield_overrides.update(sp_meta.formfield_overrides)
-    if sp_meta.fieldsets:
-        PageLayoutAdmin.fieldsets = sp_meta.fieldsets
+    if pm_meta.formfield_overrides:
+        PageLayoutAdmin.formfield_overrides.update(pm_meta.formfield_overrides)
+    if pm_meta.fieldsets:
+        PageLayoutAdmin.fieldsets = pm_meta.fieldsets
     if meta.verbose_name:
         PageLayoutAdmin.verbose_name = meta.verbose_name
     if meta.verbose_name_plural:
         PageLayoutAdmin.verbose_name_plural = meta.verbose_name_plural
-    if sp_meta.inlines:
-        PageLayoutAdmin.inlines = PageLayoutAdmin.inlines + sp_meta.inlines
-    if sp_meta.exclude:
-        PageLayoutAdmin.exclude = PageLayoutAdmin.exclude + sp_meta.exclude
+    if pm_meta.inlines:
+        PageLayoutAdmin.inlines = PageLayoutAdmin.inlines + pm_meta.inlines
+    if pm_meta.exclude:
+        PageLayoutAdmin.exclude = PageLayoutAdmin.exclude + pm_meta.exclude
 
     admin.site.register(page_layout, PageLayoutAdmin)
