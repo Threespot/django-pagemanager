@@ -4,7 +4,7 @@ from django.conf import settings
 from pagemanager import PageAdmin
 from pagemanager.models import Page
 
-def get_staticpage_model():
+def get_pagemanager_model():
     """
     Returns the model to be used by staticpages. It must be either
     staticpages.models.Page or a subclass thereof.
@@ -20,7 +20,7 @@ def get_staticpage_model():
     return Page
 
 
-def get_staticpage_modeladmin():
+def get_pagemanager_modeladmin():
     """
     Returns the model to be used by staticpages. It must be either
     staticpages.models.Page or a subclass thereof.
