@@ -4,7 +4,7 @@ from django.core.exceptions import ImproperlyConfigured
 from pagemanager.exceptions import AlreadyRegistered, NotRegistered
 
 
-class StaticPageSite(object):
+class PageManagerSite(object):
 
     def __init__(self):
         self._registry = []
@@ -51,4 +51,4 @@ class StaticPageSite(object):
         return None
 
 
-pagemanager_site = StaticPageSite()
+pagemanager_site = PageManagerSite()

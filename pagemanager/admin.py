@@ -11,7 +11,7 @@ from reversion.admin import VersionAdmin
 from pagemanager import PageAdmin
 from pagemanager.app_settings import STATICPAGES_PAGE_MODEL, STATICPAGES_PAGE_MODELADMIN
 from pagemanager.models import Page
-from pagemanager.sites import StaticPageSite, pagemanager_site
+from pagemanager.sites import pagemanager_site
 
 
 # PageAdmin located in pagemanager.init to prevent a circular import

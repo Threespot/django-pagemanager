@@ -32,9 +32,9 @@ class ListingPageLayout(PageLayout):
         return [self.base]
 
 
-class StaticPageSiteTest(unittest.TestCase):
+class PageManagerSiteTest(unittest.TestCase):
     def setUp(self):
-        self.site = staticpages.sites.StaticPageSite()
+        self.site = staticpages.sites.PageManagerSite()
 
     def test_initilization(self):
         self.assertTrue(self.site._registry == [])
@@ -54,7 +54,7 @@ class PageLayoutModelTest(unittest.TestCase):
     def test_initialization(self):
         self.assertTrue(isinstance(
             staticpages.pagemanager_site,
-            staticpages.sites.StaticPageSite
+            staticpages.sites.PageManagerSite
         ))
 
     def test_get_thumbnail(self):
@@ -88,7 +88,7 @@ class PageLayoutModelTest(unittest.TestCase):
 
 class RegistrationTest(unittest.TestCase):
     def setUp(self):
-        self.site = staticpages.sites.StaticPageSite()
+        self.site = staticpages.sites.PageManagerSite()
         self.test_layout = HomepageLayout
 
     def test_registration(self):
