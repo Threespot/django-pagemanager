@@ -11,7 +11,7 @@ from reversion.admin import VersionAdmin
 from pagemanager import PageAdmin
 from pagemanager.app_settings import STATICPAGES_PAGE_MODEL, STATICPAGES_PAGE_MODELADMIN
 from pagemanager.models import Page
-from pagemanager.sites import StaticPageSite, static_page_site
+from pagemanager.sites import StaticPageSite, pagemanager_site
 
 
 # PageAdmin located in pagemanager.init to prevent a circular import
@@ -34,7 +34,7 @@ class PageInline(generic.GenericStackedInline):
 
 
 # Dynamically register admins for each registered PageLayout subclass
-for page_layout in static_page_site._registry:
+for page_layout in pagemanager_site._registry:
 
     class PageLayoutAdmin(VersionAdmin):
         """

@@ -9,7 +9,7 @@ from django.utils.translation import ugettext as _
 from reversion.admin import VersionAdmin
 
 from pagemanager.models import Page
-from pagemanager.sites import StaticPageSite, static_page_site
+from pagemanager.sites import pagemanager_site
 
 
 def autodiscover():
@@ -26,10 +26,10 @@ def autodiscover():
     for app in settings.INSTALLED_APPS:
         mod = import_module(app)
         try:
-            before_import_registry = copy.copy(static_page_site._registry)
+            before_import_registry = copy.copy(pagemanager_site._registry)
             import_module('%s.models' % app)
         except:
-            static_page_site._registry = before_import_registry
+            pagemanager_site._registry = before_import_registry
             if module_has_submodule(mod, 'models'):
                 raise
 
@@ -82,7 +82,7 @@ class PageAdmin(admin.ModelAdmin):
         of Page's add_view.
         """
         if add:
-            context.update({'page_layouts': static_page_site})
+            context.update({'page_layouts': pagemanager_site})
         return super(PageAdmin, self).render_change_form(request, context, \
             add, change, form_url, obj)
 
@@ -121,7 +121,7 @@ class PageAdmin(admin.ModelAdmin):
         if not obj.pk:
 
             # Create new instance of PostLayout subclass
-            layout_model = static_page_site.get_by_name(request.POST['layout'])
+            layout_model = pagemanager_site.get_by_name(request.POST['layout'])
             layout = layout_model()
             layout.save()
 

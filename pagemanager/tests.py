@@ -53,7 +53,7 @@ class PageLayoutModelTest(unittest.TestCase):
 
     def test_initialization(self):
         self.assertTrue(isinstance(
-            staticpages.static_page_site,
+            staticpages.pagemanager_site,
             staticpages.sites.StaticPageSite
         ))
 

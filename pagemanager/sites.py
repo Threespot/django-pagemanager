@@ -51,4 +51,4 @@ class StaticPageSite(object):
         return None
 
 
-static_page_site = StaticPageSite()
+pagemanager_site = StaticPageSite()
