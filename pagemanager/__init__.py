@@ -51,7 +51,7 @@ class PageAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('title',)}
 
     def get_urls(self):
-        from django.conf.urls.defaults import *
+        from django.conf.urls.defaults import patterns
         urls = super(PageAdmin, self).get_urls()
         more = patterns('',
             (r'^parentsorders/$', self.admin_site.admin_view(self.parents_orders))
