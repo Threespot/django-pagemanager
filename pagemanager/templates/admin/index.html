@@ -158,7 +158,7 @@
                 {% lookup_permissions node user %}
                     {% if can_view_node %}
                     <li id="{{ node.node_id }}" data-node_id="{{ node.pk }}" data-parent_id="{{ node.parent.pk }}" data-order="{{ node.order }}" class="clearfix node">
-                        <div class="data visibility-{% if node.is_visible %}public{% else %}private{% endif %}">
+                        <div class="data visibility-{% if node.is_visible %}public{% else %}private{% endif %} status-{% if node.is_published %}published{% else %}unpublished{% endif %}">
                             <a {% if not node.is_visible %}title="Private page"{% endif %} href="{{ node.get_absolute_url }}"><span>{{ node.title }}</span></a>
                             <div class="actions">
                                 {% if can_edit_node %}<a class="edit" href="{{ node.get_edit_url }}">Edit</a>{% endif %}

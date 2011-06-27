@@ -104,6 +104,10 @@
             background: url('../img/private.png') no-repeat 0px 8px;
             padding-left: 18px;
         }
+        .node > .data.status-published > a > span{
+            background: url('../img/published.png') no-repeat 0px 8px;
+            padding-left: 18px;
+        }
             .dragging .node > .data > a{
                 cursor: pointer;
             }

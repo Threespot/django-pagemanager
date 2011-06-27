@@ -1,6 +1,10 @@
+from functools import partial
+
 from django.contrib import admin
+from django.contrib import messages
 from django.contrib.admin.util import unquote
 from django.contrib.contenttypes import generic
+from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.http import HttpResponseRedirect
@@ -54,6 +58,92 @@ for page_layout in pagemanager_site._registry:
             """
             return HttpResponseRedirect(reverse('admin:index'))
 
+        
+        def _get_page_formset(self, request):
+            for fs in self.get_formsets(request):
+                if fs.model == Page:
+                    return fs
+            return None
+        
+        def change_view(self, request, object_id, extra_context=None):
+            obj = self.get_object(request, unquote(object_id))
+            obj_pages = obj.page.all()
+            if len(obj_pages) == 1:
+                page = obj_pages[0]
+            else:
+                raise ValueError, "Multiple or no pages relate to this layout."
+            opts = self.model._meta
+            view_priv_perm = "%s.can_view_private_pages" % opts.app_label
+            view_unpub_perm = "%s.can_view_draft_pages" % opts.app_label
+            change_status_perm = "%s.can_publish_pages" % opts.app_label
+            change_visibility_perm = "%s.can_change_visibility" % opts.app_label
+            
+            # Reject users who don't have permission to view the page becuase
+            # it's unpublished or invisible.
+            if not page.is_visible:
+                if not request.user.has_perm(view_priv_perm):
+                    raise PermissionDenied, "Can't view invisible pages."
+            if not page.is_published:
+                if not request.user.has_perm(view_unpub_perm):
+                    raise PermissionDenied, "Can't view unpublished pages."
+            
+            if request.method == 'POST':
+                formset = self._get_page_formset(request)
+                prefix = formset.get_default_prefix()
+                ModelForm = self.get_form(request, obj)
+                form = ModelForm(request.POST, request.FILES)
+                changed_data = form.data
+                this_url = reverse(
+                    "admin:%s_%s_change" % (opts.app_label, opts.module_name),
+                    args = (object_id,)
+                )
+                
+                def value_filter(name, prefix=None):
+                    def f(obj):
+                        return obj.startswith(prefix) and obj.endswith(name)
+                    return f
+                get_value_filter = partial(value_filter, prefix=prefix)
+                
+                # Verify that users can't change status if they don't have 
+                # permissions to do so.                
+                status_key = filter(get_value_filter('status'), changed_data)[0]
+                
+                if changed_data[status_key] != page.status:
+                    if not request.user.has_perm(change_status_perm):
+                        messages.add_message(
+                            request, 
+                            messages.ERROR, 
+                            (
+                                'You don\'t have permission to change the '
+                                ' status of this page.'
+                            )
+                        )
+                        return HttpResponseRedirect(this_url)
+                        #raise PermissionDenied, "Can't change status."
+                
+                # Verify that users can't change visibility if they don't have 
+                # permissions to do so.
+                vz_key = filter(get_value_filter('visibility'), changed_data)[0]
+                if changed_data[vz_key] != page.visibility:
+                    if not request.user.has_perm(change_visibility_perm):
+                        messages.add_message(
+                            request, 
+                            messages.ERROR, 
+                            (
+                                'You don\'t have permission to change the '
+                                ' visibility of this page.'
+                            )
+                        )                        
+                        return HttpResponseRedirect(this_url)
+                        #raise PermissionDenied, "Can't change visibility."
+
+            # All permissions checks have passed.
+            return super(PageLayoutAdmin, self).change_view(
+                request,
+                object_id,
+                extra_context=None
+            )
+        
         def add_view(self, request, form_url='', extra_context=None):
             """
             Redirect the PageLayout add_view to the Page add_view
