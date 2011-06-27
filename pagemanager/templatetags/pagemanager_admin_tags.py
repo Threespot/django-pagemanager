@@ -101,7 +101,10 @@ def pagemanager_app_list(parser, token):
 
 
 class LookupPermissionsNode(template.Node):
-    
+    """
+    A template tag rederer that provides info about the types of permissions
+    the given user has on the given node.
+    """
     def __init__(self, node_var_name, user_var_name):
         self.node_var = template.Variable(node_var_name)
         self.user_var = template.Variable(user_var_name)
@@ -151,6 +154,20 @@ class LookupPermissionsNode(template.Node):
 
 @register.tag
 def lookup_permissions(parser, token):
+    """
+    A template tag node that provides info about the types of permissions
+    the given user has on the given node. Example usage:
+        
+        {% lookup_permissions node user %}
+    
+    This sets the following boolean variables in the template context:
+    
+        'can_view_node'
+        'can_add_node'
+        'can_edit_node'
+        'can_delete_node'
+        
+    """
     try:
         tag_name, node_var_name, user_var_name = token.split_contents()
     except ValueError:
