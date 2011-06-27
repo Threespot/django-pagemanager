@@ -65,26 +65,44 @@ for page_layout in pagemanager_site._registry:
                     return fs
             return None
         
+        def _get_extra_permissions_names(self, request):
+            app_label = self.model._meta.app_label
+            return {
+                'view_private': "%s.can_view_private_pages" % app_label,
+                'view_unpublished': "%s.can_view_draft_pages" % app_label,
+                'change_status': "%s.can_publish_pages" % app_label,
+                'change_visibility': "%s.can_change_visibility" % app_label
+            }
+        
         def change_view(self, request, object_id, extra_context=None):
+            """
+            Adds some initial permissions checks to ensure that users can't:
+            
+                1. view objects they don't have permissions on
+                2. change item's publication status without needed permissions
+                3. change item's visibility status without needed permissions
+            
+            """
+            
             obj = self.get_object(request, unquote(object_id))
             obj_pages = obj.page.all()
             if len(obj_pages) == 1:
                 page = obj_pages[0]
             else:
-                raise ValueError, "Multiple or no pages relate to this layout."
-            opts = self.model._meta
-            view_priv_perm = "%s.can_view_private_pages" % opts.app_label
-            view_unpub_perm = "%s.can_view_draft_pages" % opts.app_label
-            change_status_perm = "%s.can_publish_pages" % opts.app_label
-            change_visibility_perm = "%s.can_change_visibility" % opts.app_label
+                raise ValueError, (
+                    "Only one page can relate to this layout. Either multiple "
+                    "or zero pages relate to this layout."
+                )
+            
+            permissions = self._get_extra_permissions_names(request)
             
             # Reject users who don't have permission to view the page becuase
             # it's unpublished or invisible.
             if not page.is_visible:
-                if not request.user.has_perm(view_priv_perm):
+                if not request.user.has_perm(permissions['view_private']):
                     raise PermissionDenied, "Can't view invisible pages."
             if not page.is_published:
-                if not request.user.has_perm(view_unpub_perm):
+                if not request.user.has_perm(permissions['view_unpublished']):
                     raise PermissionDenied, "Can't view unpublished pages."
             
             if request.method == 'POST':
@@ -93,6 +111,7 @@ for page_layout in pagemanager_site._registry:
                 ModelForm = self.get_form(request, obj)
                 form = ModelForm(request.POST, request.FILES)
                 changed_data = form.data
+                opts = self.model._meta
                 this_url = reverse(
                     "admin:%s_%s_change" % (opts.app_label, opts.module_name),
                     args = (object_id,)
@@ -107,36 +126,29 @@ for page_layout in pagemanager_site._registry:
                 # Verify that users can't change status if they don't have 
                 # permissions to do so.                
                 status_key = filter(get_value_filter('status'), changed_data)[0]
-                
                 if changed_data[status_key] != page.status:
-                    if not request.user.has_perm(change_status_perm):
-                        messages.add_message(
-                            request, 
-                            messages.ERROR, 
-                            (
-                                'You don\'t have permission to change the '
-                                ' status of this page.'
-                            )
+                    if not request.user.has_perm(permissions['change_status']):
+                        message = (
+                            "You don't have permission to change the status "
+                            "of this page."
                         )
+                        messages.add_message(request, messages.ERROR, message)
                         return HttpResponseRedirect(this_url)
-                        #raise PermissionDenied, "Can't change status."
                 
                 # Verify that users can't change visibility if they don't have 
                 # permissions to do so.
                 vz_key = filter(get_value_filter('visibility'), changed_data)[0]
                 if changed_data[vz_key] != page.visibility:
-                    if not request.user.has_perm(change_visibility_perm):
-                        messages.add_message(
-                            request, 
-                            messages.ERROR, 
-                            (
-                                'You don\'t have permission to change the '
-                                ' visibility of this page.'
-                            )
+                    if not request.user.has_perm(
+                        permissions['change_visibility']
+                    ):
+                        message = (
+                            "You don't have permission to change the visibility"
+                            " of this page."
                         )                        
+                        messages.add_message(request, messages.ERROR, message)
                         return HttpResponseRedirect(this_url)
-                        #raise PermissionDenied, "Can't change visibility."
-
+            
             # All permissions checks have passed.
             return super(PageLayoutAdmin, self).change_view(
                 request,
