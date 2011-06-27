@@ -53,8 +53,9 @@ class PageAdmin(admin.ModelAdmin):
     def get_urls(self):
         from django.conf.urls.defaults import patterns
         urls = super(PageAdmin, self).get_urls()
+        vw = self.admin_site.admin_view(self.parents_orders)
         more = patterns('',
-            (r'^parentsorders/$', self.admin_site.admin_view(self.parents_orders))
+            (r'^parentsorders/$', vw)
         )
         return more + urls
 
