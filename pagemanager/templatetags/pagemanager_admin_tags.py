@@ -98,3 +98,66 @@ def pagemanager_app_list(parser, token):
 
     """
     return AppListNode()
+
+
+class LookupPermissionsNode(template.Node):
+    
+    def __init__(self, node_var_name, user_var_name):
+        self.node_var = template.Variable(node_var_name)
+        self.user_var = template.Variable(user_var_name)
+    
+    def render(self, context):
+        permissions = {
+            'can_view_node': False,
+            'can_add_node': False,
+            'can_edit_node': False,
+            'can_delete_node': False
+        }
+        try:
+            node = self.node_var.resolve(context)
+            user = self.user_var.resolve(context)
+        except:
+            for perm_name, perm in permissions.items():
+                context[perm_name] = perm
+            return ''
+        
+        # Determine 'can_view' pmerissions.
+        opts = node.__class__._meta
+        user_permissions = user.get_all_permissions()
+        view_priv_perm = "%s.can_view_private_pages" % opts.app_label
+        view_unpub_perm = "%s.can_view_draft_pages" % opts.app_label
+        if not node.is_visible:
+            if user.has_perm(view_priv_perm):
+                permissions['can_view_node'] = True
+        elif not node.is_published:
+            if user.has_perm(view_unpub_perm):
+                permissions['can_view_node'] = True
+        else:
+            # Node is not private or draft, so everyone can see it.
+            permissions['can_view_node'] = True
+        # Determine 'can_add_node' permissions.
+        if user.has_perm("%s.add_%s" % (opts.app_label, opts.module_name)):
+            permissions['can_add_node'] = True
+        # Determine 'can_edit' permissions.
+        if user.has_perm("%s.change_%s" % (opts.app_label, opts.module_name)):
+            permissions['can_edit_node'] = True
+        # Determine 'can_delete' permissions.
+        if user.has_perm("%s.delete_%s" % (opts.app_label, opts.module_name)):
+            permissions['can_delete_node'] = True
+        
+        for perm_name, perm in permissions.items():
+            context[perm_name] = perm
+        return ''
+
+@register.tag
+def lookup_permissions(parser, token):
+    try:
+        tag_name, node_var_name, user_var_name = token.split_contents()
+    except ValueError:
+        message = (
+            "The lookup_permissions tag requires a two arguments: "
+            " the node to find permissions for and the user."
+        )
+        raise template.TemplateSyntaxError, message
+    
+    return LookupPermissionsNode(node_var_name, user_var_name)

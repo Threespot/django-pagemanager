@@ -100,6 +100,10 @@
             background: url(../img/draghandle.gif) no-repeat 4px 4px;
             cursor: move;
         }
+        .node > .data.visibility-private > a > span{
+            background: url('../img/private.png') no-repeat 0px 8px;
+            padding-left: 18px;
+        }
             .dragging .node > .data > a{
                 cursor: pointer;
             }

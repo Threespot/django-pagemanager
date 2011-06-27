@@ -46,6 +46,7 @@ class Page(MPTTModel):
             ('can_view_draft_pages', 'Can view draft pages'),
             ('can_publish_pages', 'Can publish pages'),
             ('can_view_private_pages', 'Can view private pages'),
+            ('can_change_visibility', 'Can change page visibility'),
         )
         unique_together = ('parent', 'slug')
         verbose_name = 'page'
@@ -88,7 +89,15 @@ class Page(MPTTModel):
     @property
     def path_prefix(self):
         return '/'.join([ancestor.slug for ancestor in self.get_ancestors()])
-
+    
+    @property
+    def is_visible(self):
+        return self.visibility == 'public'
+    
+    @property
+    def is_published(self):
+        return self.status == 'published'
+    
     @classmethod
     def hide_from_applist(self):
         return True
