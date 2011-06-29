@@ -43,10 +43,11 @@ class Page(MPTTModel):
     class Meta:
         get_latest_by = 'date_created'
         permissions = (
-            ('can_view_draft_pages', 'Can view draft pages'),
-            ('can_publish_pages', 'Can publish pages'),
-            ('can_view_private_pages', 'Can view private pages'),
-            ('can_change_visibility', 'Can change page visibility'),
+            ('view_private_pages', 'Can view private pages'),
+            ('change_visibility', 'Can change page visibility'),
+            ('view_draft_pages', 'Can view draft pages'),
+            ('change_status', 'Can change page status'),
+            ('modify_published_pages', 'Can change published pages'),
         )
         unique_together = ('parent', 'slug')
         verbose_name = 'page'

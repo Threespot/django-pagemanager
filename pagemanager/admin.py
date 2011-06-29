@@ -67,11 +67,13 @@ for page_layout in pagemanager_site._registry:
         
         def _get_extra_permissions_names(self, request):
             app_label = self.model._meta.app_label
+            app_label = "pagemanager"
             return {
                 'view_private': "%s.can_view_private_pages" % app_label,
                 'view_unpublished': "%s.can_view_draft_pages" % app_label,
                 'change_status': "%s.can_publish_pages" % app_label,
-                'change_visibility': "%s.can_change_visibility" % app_label
+                'change_visibility': "%s.can_change_visibility" % app_label,
+                'edit_published': "%s.can_edit_published_pages" % app_label,
             }
         
         def change_view(self, request, object_id, extra_context=None):

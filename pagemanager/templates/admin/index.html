@@ -156,14 +156,30 @@
                 {% load_pages %}
                 {% recursetree pagemanager_pages %}
                 {% lookup_permissions node user %}
-                    {% if can_view_node %}
+                    {% if view_object %}
                     <li id="{{ node.node_id }}" data-node_id="{{ node.pk }}" data-parent_id="{{ node.parent.pk }}" data-order="{{ node.order }}" class="clearfix node">
                         <div class="data visibility-{% if node.is_visible %}public{% else %}private{% endif %} status-{% if node.is_published %}published{% else %}unpublished{% endif %}">
                             <a {% if not node.is_visible %}title="Private page"{% endif %} href="{{ node.get_absolute_url }}"><span>{{ node.title }}</span></a>
                             <div class="actions">
-                                {% if can_edit_node %}<a class="edit" href="{{ node.get_edit_url }}">Edit</a>{% endif %}
-                                {% if can_add_node %}<a class="add" href="{{ node.get_add_child_url }}">Add Child</a>{% endif %}
-                                {% if can_delete_node %}<a class="delete" href="{{ node.get_delete_url }}">Delete</a>{% endif %}
+                                {% if change_object %}
+                                {% if node.is_published %}
+                                    {% if modify_published_objects %}
+                                <a class="edit" href="{{ node.get_edit_url }}">Edit</a>
+                                    {% endif %}
+                                {% else %}
+                                <a class="edit" href="{{ node.get_edit_url }}">Edit</a>
+                                {% endif %}
+                                {% endif %}
+                                {% if add_object %}<a class="add" href="{{ node.get_add_child_url }}">Add Child</a>{% endif %}
+                                {% if delete_object %}
+                                {% if node.is_published %}
+                                    {% if modify_published_objects %}
+                                <a class="delete" href="{{ node.get_delete_url }}">Delete</a>
+                                    {% endif %}
+                                {% else %}
+                                <a class="delete" href="{{ node.get_delete_url }}">Delete</a>
+                                {% endif %}
+                                {% endif %}
                             </div>
                         </div>
                         {% if not node.is_leaf_node %}

@@ -7,6 +7,8 @@ from django.utils.safestring import mark_safe
 from django.utils.text import capfirst
 
 from pagemanager.app_settings import PAGEMANAGER_PAGE_MODEL
+from pagemanager.permissions import get_permissions, get_lookup_function
+
 
 register = template.Library()
 
@@ -109,47 +111,74 @@ class LookupPermissionsNode(template.Node):
         self.node_var = template.Variable(node_var_name)
         self.user_var = template.Variable(user_var_name)
     
+    @staticmethod
+    def _rename_permissions(permissions_dict, model_name):
+        """
+        This function is used to ensure that the variable names created in 
+        the template context are standardized. We deal with permissions that 
+        have the name of the model in them, but model name may change. We want
+        to have the context variable names always be the same, even though they 
+        are generated from the actual permission names. Therefore we replace
+        any appearance of the model name or "page" with "object".
+        """
+        for permission_name, permission in permissions_dict.items():
+            new_name = permission_name.replace(
+                model_name, "object"
+            ).replace(
+                "page", "object"
+            )
+            permissions_dict[new_name] = permission
+            del permissions_dict[permission_name]
+        return permissions_dict
+    
     def render(self, context):
-        permissions = {
-            'can_view_node': False,
-            'can_add_node': False,
-            'can_edit_node': False,
-            'can_delete_node': False
-        }
+        permission_names = get_permissions()
+        permissions = dict([(k, False) for k in permission_names.keys()])
+        # Adding shortcut permission that combines ``view_private_pages`` and
+        # `` view_draft_pages`` permissions.
+        permissions['view_page'] = False
         try:
             node = self.node_var.resolve(context)
             user = self.user_var.resolve(context)
-        except:
-            for perm_name, perm in permissions.items():
-                context[perm_name] = perm
+        except template.VariableDoesNotExist:
+            # If variables can't be resolved, all permissions are False.
+            permissions = self._rename_permissions(permissions, "page")
+            for permission_name, permission in permissions.items():
+                context[permission_name] = permission
             return ''
         
-        # Determine 'can_view' pmerissions.
         opts = node.__class__._meta
-        user_permissions = user.get_all_permissions()
-        view_priv_perm = "%s.can_view_private_pages" % opts.app_label
-        view_unpub_perm = "%s.can_view_draft_pages" % opts.app_label
-        if not node.is_visible:
-            if user.has_perm(view_priv_perm):
-                permissions['can_view_node'] = True
-        elif not node.is_published:
-            if user.has_perm(view_unpub_perm):
-                permissions['can_view_node'] = True
-        else:
-            # Node is not private or draft, so everyone can see it.
-            permissions['can_view_node'] = True
-        # Determine 'can_add_node' permissions.
-        if user.has_perm("%s.add_%s" % (opts.app_label, opts.module_name)):
-            permissions['can_add_node'] = True
-        # Determine 'can_edit' permissions.
-        if user.has_perm("%s.change_%s" % (opts.app_label, opts.module_name)):
-            permissions['can_edit_node'] = True
-        # Determine 'can_delete' permissions.
-        if user.has_perm("%s.delete_%s" % (opts.app_label, opts.module_name)):
-            permissions['can_delete_node'] = True
+        lookup_perm = get_lookup_function(user,permission_names)
         
-        for perm_name, perm in permissions.items():
-            context[perm_name] = perm
+        # Shortcut: if the user is a superuser we can just set all permissions
+        # to True and be done with it.
+        if user.is_superuser:
+            permissions = self._rename_permissions(
+                permissions, opts.module_name
+            )
+            print permissions
+            for permission_name, permission in permissions.items():
+                context[permission_name] = True
+            return ''
+        
+        # Determine visibility permissions.
+        if not node.is_visible and lookup_perm('view_private_pages'):
+            permissions['view_private_pages'] = True
+        if not node.is_published and lookup_perm('view_draft_pages'):
+            permissions['view_draft_pages'] = True
+        if (node.is_visible or permissions['view_private_pages']) and \
+            (node.is_published or permissions['view_draft_pages']):
+            permissions['view_page'] = True
+        
+        # Determine standard model permissions.
+        for verb in ('add', 'change', 'delete'):
+            permission_name = "%s_%s" % (verb, opts.module_name)
+            if lookup_perm(permission_name):
+                permissions[permission_name] = True
+        # Commit all permissions to context:
+        permissions = self._rename_permissions(permissions, opts.module_name)
+        for permission_name, permission in permissions.items():
+            context[permission_name] = permission
         return ''
 
 @register.tag
@@ -162,10 +191,15 @@ def lookup_permissions(parser, token):
     
     This sets the following boolean variables in the template context:
     
-        'can_view_node'
-        'can_add_node'
-        'can_edit_node'
-        'can_delete_node'
+        'add_object'
+        'delete_object'
+        'change_object'
+        'view_draft_objects'
+        'view_private_objects'
+        'view_object'
+        'change_visibility'
+        'change_status'
+        'modify_published_objects'
         
     """
     try:
