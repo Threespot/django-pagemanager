@@ -8,7 +8,9 @@ from django.template.defaultfilters import slugify
 from mptt.fields import TreeForeignKey
 from mptt.models import MPTTModel, MPTTModelBase
 
-from pagemanager.permissions import get_published_status_name, get_public_visibility_name
+from pagemanager.permissions import get_published_status_name, \
+    get_public_visibility_name
+from pagemanager.managers import PageManager
 
 class Page(MPTTModel):
     """
@@ -41,6 +43,8 @@ class Page(MPTTModel):
     layout_type = models.ForeignKey(ContentType, blank=True, null=True)
     object_id = models.PositiveIntegerField(blank=True, null=True)
     page_layout = generic.GenericForeignKey('layout_type', 'object_id')
+    
+    objects = PageManager()
 
     class Meta:
         get_latest_by = 'date_created'
@@ -101,10 +105,24 @@ class Page(MPTTModel):
         return self.status == get_published_status_name()
     is_published.boolean = True
     
+    def publish(self):
+        """Convenience method to publish a page"""
+        published_status_name = get_published_status_name()
+        if self.status != published_status_name:
+            self.status = published_status_name
+            self.save()
+            return True
+    
     def is_draft_copy(self):
         """ Is this item a draft copy?"""
         return bool(self.copy_of)
     is_draft_copy.boolean = True
+    
+    def get_draft_copy(self):
+        """
+        Retrieve the draft copy of this item if it exists.
+        """
+        return self._default_manager.filter(copy_of__id=self.id)
     
     @classmethod
     def hide_from_applist(self):
