@@ -8,6 +8,7 @@ from django.template.defaultfilters import slugify
 from mptt.fields import TreeForeignKey
 from mptt.models import MPTTModel, MPTTModelBase
 
+from pagemanager import get_published_status_name, get_public_visibility_name
 
 class Page(MPTTModel):
     """
@@ -93,11 +94,11 @@ class Page(MPTTModel):
     
     @property
     def is_visible(self):
-        return self.visibility == 'public'
+        return self.visibility == get_public_visibility_name()
     
     @property
     def is_published(self):
-        return self.status == 'published'
+        return self.status == get_published_status_name()
     
     @classmethod
     def hide_from_applist(self):

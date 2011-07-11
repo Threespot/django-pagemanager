@@ -1,6 +1,5 @@
 from functools import partial
 
-
 def get_permissions():
     """
     Returns a dictionary of all permissions for the pagemanager
@@ -29,3 +28,30 @@ def get_lookup_function(user=None, permission_list=None):
     def _lookup_func(user, permission_list, permission_name):
         return user.has_perm(permission_list[permission_name])
     return partial(_lookup_func, user, permission_list)
+
+
+
+
+# Below, the logic for whether a page is public or published is 
+# encapsulated in a single location. This info will be needed in multiple places 
+# throughout the pagemanager application. These functions are the canonical 
+# method for determining what consititutes "public" and "published"!
+
+def get_published_status_name():
+    """
+    Gets the value stored for a status of "published". 
+    Always assumes the final status choice is the one that means 'published'. 
+    """
+    from pagemanager.util import get_pagemanager_model
+    page_model = get_pagemanager_model()
+    return page_model._meta.get_field('status').choices[-1][0]
+
+def get_public_visibility_name():
+    """
+    Gets the value stored for a visibility of "public". 
+    Always assumes the first visibility choice is the one that means
+    'public'. 
+    """
+    from pagemanager.util import get_pagemanager_model
+    page_model = get_pagemanager_model()
+    return page_model._meta.get_field('visibility').choices[0][0]

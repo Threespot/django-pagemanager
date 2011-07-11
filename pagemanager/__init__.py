@@ -10,7 +10,8 @@ from django.utils.translation import ugettext as _
 from reversion.admin import VersionAdmin
 
 from pagemanager.models import Page
-from pagemanager.permissions import get_permissions, get_lookup_function
+from pagemanager.permissions import get_permissions, get_lookup_function, \
+    get_published_status_name, get_public_visibility_name
 from pagemanager.sites import pagemanager_site
 
 def autodiscover():
@@ -103,12 +104,14 @@ class PageAdmin(admin.ModelAdmin):
             if not lookup_perm('change_status'):
                 form = self.get_form(request)(request.POST, request.FILES)
                 if form.is_valid():
-                    if form.cleaned_data.get('status') == 'published':
+                    is_published_value = get_published_status_name()
+                    if form.cleaned_data.get('status') == is_published_value:
                         raise PermissionDenied, "Can't create published pages."
             if not lookup_perm('change_visibility'):
                 form = self.get_form(request)(request.POST, request.FILES)
                 if form.is_valid():
-                    if form.cleaned_data.get('visibility') == 'public':
+                    is_public_value = get_public_visibility_name()
+                    if form.cleaned_data.get('visibility') == is_public_value:
                         raise PermissionDenied, "Can't create public pages."
         return super(PageAdmin, self).add_view(request, 
             form_url=form_url,
