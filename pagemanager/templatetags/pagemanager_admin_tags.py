@@ -171,12 +171,12 @@ class LookupPermissionsNode(template.Node):
         
         # Determine visibility permissions.
         if node:
-            if not node.is_visible and lookup_perm('view_private_pages'):
+            if not node.is_visible() and lookup_perm('view_private_pages'):
                 permissions['view_private_pages'] = True
-            if not node.is_published and lookup_perm('view_draft_pages'):
+            if not node.is_published() and lookup_perm('view_draft_pages'):
                 permissions['view_draft_pages'] = True
-            if (node.is_visible or permissions['view_private_pages']) and \
-                (node.is_published or permissions['view_draft_pages']):
+            if (node.is_visible() or permissions['view_private_pages']) and \
+                (node.is_published() or permissions['view_draft_pages']):
                 permissions['view_page'] = True
         
         # Determine standard model permissions.

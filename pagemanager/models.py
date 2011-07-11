@@ -92,13 +92,13 @@ class Page(MPTTModel):
     def path_prefix(self):
         return '/'.join([ancestor.slug for ancestor in self.get_ancestors()])
     
-    @property
     def is_visible(self):
         return self.visibility == get_public_visibility_name()
+    is_visible.boolean = True
     
-    @property
     def is_published(self):
         return self.status == get_published_status_name()
+    is_published.boolean = True
     
     @classmethod
     def hide_from_applist(self):
