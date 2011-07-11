@@ -8,7 +8,7 @@ from django.template.defaultfilters import slugify
 from mptt.fields import TreeForeignKey
 from mptt.models import MPTTModel, MPTTModelBase
 
-from pagemanager import get_published_status_name, get_public_visibility_name
+from pagemanager.permissions import get_published_status_name, get_public_visibility_name
 
 class Page(MPTTModel):
     """
