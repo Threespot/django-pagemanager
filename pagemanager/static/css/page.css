@@ -120,6 +120,10 @@ form .layout.aligned li{
     right: 15px;
     padding: 0;
 }
+.form-row.disabled label.required,
+.form-row.disabled label {
+    color: #ccc !important;
+}
 .colM .aligned .vLargeTextField, .colM .aligned .vXMLLargeTextField{
     width: 617px;
 }

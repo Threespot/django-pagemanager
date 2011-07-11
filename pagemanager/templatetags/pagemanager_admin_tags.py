@@ -8,7 +8,7 @@ from django.utils.text import capfirst
 
 from pagemanager.app_settings import PAGEMANAGER_PAGE_MODEL
 from pagemanager.permissions import get_permissions, get_lookup_function
-
+from pagemanager.util import get_pagemanager_model
 
 register = template.Library()
 
@@ -127,27 +127,36 @@ class LookupPermissionsNode(template.Node):
             ).replace(
                 "page", "object"
             )
-            permissions_dict[new_name] = permission
-            del permissions_dict[permission_name]
+            if new_name != permission_name:
+                permissions_dict[new_name] = permission
+                del permissions_dict[permission_name]
         return permissions_dict
     
     def render(self, context):
         permission_names = get_permissions()
         permissions = dict([(k, False) for k in permission_names.keys()])
+
         # Adding shortcut permission that combines ``view_private_pages`` and
         # `` view_draft_pages`` permissions.
         permissions['view_page'] = False
         try:
-            node = self.node_var.resolve(context)
             user = self.user_var.resolve(context)
         except template.VariableDoesNotExist:
-            # If variables can't be resolved, all permissions are False.
+            # If user variable can't be resolved, all permissions are False.
             permissions = self._rename_permissions(permissions, "page")
             for permission_name, permission in permissions.items():
                 context[permission_name] = permission
             return ''
+        # If node variable can't be resolved, some permissions can still 
+        # be useful.
+        try:
+            node = self.node_var.resolve(context)
+        except template.VariableDoesNotExist:
+            node = None
+            opts = get_pagemanager_model()._meta
+        else: 
+            opts = node.__class__._meta
         
-        opts = node.__class__._meta
         lookup_perm = get_lookup_function(user,permission_names)
         
         # Shortcut: if the user is a superuser we can just set all permissions
@@ -156,19 +165,19 @@ class LookupPermissionsNode(template.Node):
             permissions = self._rename_permissions(
                 permissions, opts.module_name
             )
-            print permissions
             for permission_name, permission in permissions.items():
                 context[permission_name] = True
             return ''
         
         # Determine visibility permissions.
-        if not node.is_visible and lookup_perm('view_private_pages'):
-            permissions['view_private_pages'] = True
-        if not node.is_published and lookup_perm('view_draft_pages'):
-            permissions['view_draft_pages'] = True
-        if (node.is_visible or permissions['view_private_pages']) and \
-            (node.is_published or permissions['view_draft_pages']):
-            permissions['view_page'] = True
+        if node:
+            if not node.is_visible and lookup_perm('view_private_pages'):
+                permissions['view_private_pages'] = True
+            if not node.is_published and lookup_perm('view_draft_pages'):
+                permissions['view_draft_pages'] = True
+            if (node.is_visible or permissions['view_private_pages']) and \
+                (node.is_published or permissions['view_draft_pages']):
+                permissions['view_page'] = True
         
         # Determine standard model permissions.
         for verb in ('add', 'change', 'delete'):

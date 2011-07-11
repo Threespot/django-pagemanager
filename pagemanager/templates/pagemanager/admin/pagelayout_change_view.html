@@ -17,8 +17,18 @@
                 $('.page-fields').css('margin-bottom', -1 * movePageFields);
             });
         })(django.jQuery);
-
+        {% for page in original.page.all %}
+        {% lookup_permissions page user %}
+        var permission_settings = {
+            'is_published': {% if page.is_published %}true{% else %}false{% endif %},
+            'is_visible': {% if page.is_visible %}true{% else %}false{% endif %},
+            'change_status': {% if change_status %}true{% else %}false{% endif %},
+            'change_visibility': {% if change_visibility %}true{% else %}false{% endif %},
+            'modify_published_pages': {% if modify_published_objects %}true{% else %}false{% endif %},
+        }
+        {% endfor %}
     </script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/admin-permissions.js"></script>
 {% endblock %}
 
 {% block extrastyle %}

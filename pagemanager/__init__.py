@@ -9,8 +9,8 @@ from django.utils.translation import ugettext as _
 from reversion.admin import VersionAdmin
 
 from pagemanager.models import Page
+from pagemanager.permissions import get_permissions, get_lookup_function
 from pagemanager.sites import pagemanager_site
-
 
 def autodiscover():
     """
@@ -87,6 +87,13 @@ class PageAdmin(admin.ModelAdmin):
         return super(PageAdmin, self).render_change_form(request, context, \
             add, change, form_url, obj)
 
+    def add_view(self, request, form_url='', extra_context=None):
+        lookup_perm = get_lookup_function(request.user, get_permissions())
+        return super(PageAdmin, self).add_view(request, 
+            form_url=form_url,
+            extra_context=extra_context
+        )
+    
     def changelist_view(self, request, extra_context=None):
         """
         Redirect the fake Page changelist_view to the real Page changelist_view.
