@@ -32,7 +32,7 @@ def get_lookup_function(user=None, permission_list=None):
 
 
 
-# Below, the logic for whether a page is public or published is 
+# Below, the business logic for whether a page is public or published is 
 # encapsulated in a single location. This info will be needed in multiple places 
 # throughout the pagemanager application. These functions are the canonical 
 # method for determining what consititutes "public" and "published"!
