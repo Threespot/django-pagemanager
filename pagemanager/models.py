@@ -33,7 +33,11 @@ class Page(MPTTModel):
         ('public', 'Public'),
         ('private', 'Private'),
     ))
-    copy_of = models.OneToOneField('self', blank=True, null=True)
+    copy_of = models.OneToOneField('self', 
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL
+    )
     
     # Timestamps
     date_created = models.DateTimeField(auto_now_add=True)

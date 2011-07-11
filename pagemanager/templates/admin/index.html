@@ -181,7 +181,7 @@
                                 {% endif %}
                                 {% endif %}
                                 {% if node.is_unrestricted %}
-                                <a class="copy" href="#">Create Draft Copy</a>
+                                <a class="copy" href="{% url admin:draft_copy node.pk %}">Create Draft Copy</a>
                                 {% endif %}
                             </div>
                         </div>

@@ -81,10 +81,11 @@ for page_layout in pagemanager_site._registry:
             if len(obj_pages) == 1:
                 page = obj_pages[0]
             else:
+                val = obj_pages and "Zero" or "Multiple"
                 raise ValueError, (
-                    "Only one page can relate to this layout. Either multiple "
-                    "or zero pages relate to this layout."
-                )
+                    "%s pages relate to this layout. Only one page can "
+                    "relate to this layout and at least one page must do so."
+                ) % val
             
             lookup_perm = get_lookup_function(request.user, get_permissions())
             

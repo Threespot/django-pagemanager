@@ -46,6 +46,16 @@ def get_published_status_name():
     page_model = get_pagemanager_model()
     return page_model._meta.get_field('status').choices[-1][0]
 
+def get_unpublished_status_name():
+    """
+    Gets an unpublished status . 
+    Always assumes the first status choice is the one that means 
+    'not published'. 
+    """
+    from pagemanager.util import get_pagemanager_model
+    page_model = get_pagemanager_model()
+    return page_model._meta.get_field('status').choices[0][0]
+
 def get_public_visibility_name():
     """
     Gets the value stored for a visibility of "public". 
