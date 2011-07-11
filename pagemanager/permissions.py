@@ -1,11 +1,12 @@
 from functools import partial
-from pagemanager.util import get_pagemanager_model
+
 
 def get_permissions():
     """
     Returns a dictionary of all permissions for the pagemanager
     model. Keys are short names, values are full names.
     """
+    from pagemanager.util import get_pagemanager_model
     page_model = get_pagemanager_model()
     # Create a list of permissions defined in the model...
     perms = [k for k, v in page_model._meta.permissions]

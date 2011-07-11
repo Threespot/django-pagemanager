@@ -1,6 +1,7 @@
 (function($){
 $(document).ready(function() {
     
+    
     var disable_selector = function (selector) {
         var select = $(selector).addClass("disabled")
             .find("select")
@@ -15,6 +16,10 @@ $(document).ready(function() {
         disable_selector(".form-row.status");
     }
     if (!permission_settings['change_visibility']) {
+        // Remove "public" option from choices in add page if user is not authorized to change visibility .
+        if (window.location.href.match(/\/add\//)) {
+            $(".form-row.visibility select option:first").remove();
+        }
         disable_selector(".form-row.visibility");
     }
     
@@ -26,6 +31,6 @@ $(document).ready(function() {
     if (!permission_settings['modify_published_pages'] && !permission_settings['is_published']) {
         $(".form-row.status select option:last").remove();
     }
-    
+
 });
 })(django.jQuery);

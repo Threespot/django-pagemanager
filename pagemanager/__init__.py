@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.admin.util import unquote
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.utils.encoding import force_unicode
@@ -88,7 +89,27 @@ class PageAdmin(admin.ModelAdmin):
             add, change, form_url, obj)
 
     def add_view(self, request, form_url='', extra_context=None):
-        lookup_perm = get_lookup_function(request.user, get_permissions())
+        """
+        Ensure the user is not trying to add a published or visible page if they 
+        lack the necessary permissions. 
+        """
+        if request.method == 'POST':
+            lookup_perm = get_lookup_function(request.user, get_permissions())
+            # In evaluating permissions for status and visibility, it's not 
+            # necessary to do more than raise a 403 if the user does not have
+            # the necessary permissions; status and visibility are disabled
+            # client side, so if they're not what they should be, the user is
+            # doing something suspicious.
+            if not lookup_perm('change_status'):
+                form = self.get_form(request)(request.POST, request.FILES)
+                if form.is_valid():
+                    if form.cleaned_data.get('status') == 'published':
+                        raise PermissionDenied, "Can't create published pages."
+            if not lookup_perm('change_visibility'):
+                form = self.get_form(request)(request.POST, request.FILES)
+                if form.is_valid():
+                    if form.cleaned_data.get('visibility') == 'public':
+                        raise PermissionDenied, "Can't create public pages."
         return super(PageAdmin, self).add_view(request, 
             form_url=form_url,
             extra_context=extra_context
