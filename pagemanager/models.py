@@ -31,7 +31,8 @@ class Page(MPTTModel):
         ('public', 'Public'),
         ('private', 'Private'),
     ))
-
+    copy_of = models.OneToOneField('self', blank=True, null=True)
+    
     # Timestamps
     date_created = models.DateTimeField(auto_now_add=True)
     date_modified = models.DateTimeField(auto_now=True)
@@ -99,6 +100,11 @@ class Page(MPTTModel):
     def is_published(self):
         return self.status == get_published_status_name()
     is_published.boolean = True
+    
+    def is_draft_copy(self):
+        """ Is this item a draft copy?"""
+        return bool(self.copy_of)
+    is_draft_copy.boolean = True
     
     @classmethod
     def hide_from_applist(self):
