@@ -9,6 +9,7 @@ from django.utils.translation import ugettext as _
 
 from reversion.admin import VersionAdmin
 
+from pagemanager.forms import PageAdminFormMixin
 from pagemanager.models import Page
 from pagemanager.permissions import get_permissions, get_lookup_function, \
     get_published_status_name, get_public_visibility_name
@@ -75,6 +76,20 @@ class PageAdmin(admin.ModelAdmin):
             return HttpResponse()
         raise Http404
 
+    def get_form(self, request, obj=None, **kwargs):
+        """
+        Use a bit of metaclass fun to generate a new form class that uses
+        the ``forms.PageAdminFormMixin``. This is what is then passed to 
+        the ``modelform_factory`` to get our form.
+        """
+        composed_form_class = type(
+            self.form.__name__, 
+            (PageAdminFormMixin, self.form,),
+            dict(self.form.__dict__)
+        )
+        kwargs["form"] = composed_form_class
+        return super(PageAdmin, self).get_form(request, obj=obj, **kwargs)
+        
     def render_change_form(self, request, context, add=False, change=False, \
         form_url='', obj=None):
         """
