@@ -180,6 +180,9 @@
                                 <a class="delete" href="{{ node.get_delete_url }}">Delete</a>
                                 {% endif %}
                                 {% endif %}
+                                {% if node.is_unrestricted %}
+                                <a class="copy" href="#">Create Draft Copy</a>
+                                {% endif %}
                             </div>
                         </div>
                         {% if not node.is_leaf_node %}

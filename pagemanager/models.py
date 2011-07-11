@@ -105,6 +105,14 @@ class Page(MPTTModel):
         return self.status == get_published_status_name()
     is_published.boolean = True
     
+    def is_unrestricted(self):
+        """
+        A page that is both published and visible; in other words, a page
+        that will appear on the public-facing portion of the site.
+        """
+        return self.is_published() and self.is_visible()
+    is_published.boolean = True
+    
     def publish(self):
         """Convenience method to publish a page"""
         published_status_name = get_published_status_name()

@@ -225,6 +225,8 @@
         display: inline-block;
         color: #555;
         margin-left: 18px;
+        background-repeat: no-repeat;
+        background-position: center left;
     }
         .node.jstree-search > .data > .actions a{
             color: #183c61;
@@ -238,15 +240,17 @@
             margin-left: 0;
         }
         .jstree .actions a.edit{
-            background: url(../img/change.gif) no-repeat left;
+            background-image: url(../img/change.gif) ;
         }
         .jstree .actions a.add{
-            background: url(../img/add.gif) no-repeat left;
+            background-image: url(../img/add.gif);
         }
         .jstree .actions a.delete{
-            background: url(../img/delete.gif) no-repeat left;
+            background-image: url(../img/delete.gif);
         }
-
+        .jstree .actions a.copy{
+            background-image: url(../img/copy.png);
+        }
 .clearfix:before,
 .clearfix:after{
     content: "\0020";
