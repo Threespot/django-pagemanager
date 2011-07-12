@@ -115,7 +115,21 @@ class Page(MPTTModel):
         that will appear on the public-facing portion of the site.
         """
         return self.is_published() and self.is_visible()
-    is_published.boolean = True
+    is_unrestricted.boolean = True
+    
+    @property
+    def page_status(self):
+        """
+        A human-readable description of the page status.
+        """
+        status = []
+        status.append(self.is_published() and "published" or "unpublished")
+        status.append(self.is_visible() and "public" or "private")
+        status = " and ".join(status)
+        if self.copy_of:
+            return "This draft copy is " + status + "."
+        else:
+            return "This item is " + status + "."
     
     def publish(self):
         """Convenience method to publish a page"""

@@ -101,12 +101,17 @@
             cursor: move;
         }
         .node > .data.visibility-private > a > span{
-            background: url('../img/private.png') no-repeat 0px 8px;
-            padding-left: 18px;
+            background: url('../img/private.png') no-repeat 0px 5px;
+            padding-left: 19px;
         }
         .node > .data.status-published > a > span{
             background: url('../img/published.png') no-repeat 0px 8px;
             padding-left: 18px;
+        }
+        .node > .data.draft-copy > a > span{
+            background: url('../img/draft_copy.png') no-repeat 0px 7px;
+            padding-left: 22px;
+        
         }
             .dragging .node > .data > a{
                 cursor: pointer;

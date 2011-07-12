@@ -1,20 +1,23 @@
 from copy import deepcopy
+from itertools import chain
 
 from django import template
 from django.contrib import admin
 from django.contrib.admin.options import csrf_protect_m
-from django.contrib.admin.util import unquote
+from django.contrib.admin.util import get_deleted_objects, unquote
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
-from django.db import transaction
-from django.http import HttpResponseRedirect, HttpResponse, Http404
+from django.db import transaction, router
+from django.http import HttpResponseRedirect, HttpResponseBadRequest,\
+    HttpResponse, Http404
 from django.shortcuts import render_to_response
 from django.utils.encoding import force_unicode
+from django.utils.html import escape
 from django.utils.translation import ugettext as _
 
 from reversion.admin import VersionAdmin
-from threespot.orm import introspect as intr
+from threespot.orm import introspect
 
 from pagemanager.forms import PageAdminFormMixin
 from pagemanager.models import Page
@@ -60,6 +63,7 @@ class PageAdmin(admin.ModelAdmin):
     )
     change_form_template = 'pagemanager/admin/change_form.html'
     copy_form_template = 'pagemanager/admin/copy_confirmation.html'
+    merge_form_template = "pagemanager/admin/merge_confirmation.html"
     prepopulated_fields = {'slug': ('title',)}
     
     def _copy_page(self, item):
@@ -75,11 +79,13 @@ class PageAdmin(admin.ModelAdmin):
         # Position the new item as the next neighbor of the original
         new_item.insert_at(item, position='right')
         new_item.save()
-        for obj in intr.get_referencing_objects(new_item):
+        for obj in introspect.get_referencing_objects(new_item):
             if not obj.__class__ is new_item.__class__:
                 copy_method = self._get_copy_method_name(obj)
                 obj_copy = getattr(self, copy_method, self._copy_object)(obj)
-                for data in intr.get_referencing_models(new_item.__class__):
+                for data in introspect.get_referencing_models(
+                    new_item.__class__
+                ):
                     if data['model'] is obj_copy.__class__:
                         for m2m_field_name in data['m2m_field_names']:
                             getattr(obj_copy, m2m_field_name).add(new_item)
@@ -114,12 +120,22 @@ class PageAdmin(admin.ModelAdmin):
         obj.pk = None
         obj.save()
         return obj
+
+    def _merge_item(self, original, copy):
+        """ Delete original, clean up and publish copy."""
+        original_slug = original.slug
+        copy.copy_of = None
+        copy.save()
+        original.delete()
+        copy.slug = original.slug
+        copy.publish()
+        return copy
     
     def get_urls(self):
         from django.conf.urls.defaults import patterns, url
-        parents_orders_vw = self.admin_site.admin_view(self.parents_orders)
+        parents_orders_vw = self.admin_site.admin_view(self.parents_orders_view)
         draft_copy_vw = self.admin_site.admin_view(self.copy_view)
-        draft_merge_vw = self.admin_site.admin_view(self.parents_orders)
+        draft_merge_vw = self.admin_site.admin_view(self.merge_view)
         info = self.model._meta.app_label, self.model._meta.module_name
         more = patterns('',
             url(r'^parentsorders/$', parents_orders_vw),
@@ -129,7 +145,7 @@ class PageAdmin(admin.ModelAdmin):
         urls = super(PageAdmin, self).get_urls()
         return more + urls
 
-    def parents_orders(self, request):
+    def parents_orders_view(self, request):
         if request.method == 'POST':
             for page_id, values in request.POST.iteritems():
                 parent, order = values.split(',')
@@ -164,7 +180,7 @@ class PageAdmin(admin.ModelAdmin):
                 '%(name)s object with primary key %(key)r does not exist.') %   
                 {
                     'name': force_unicode(opts.verbose_name), 
-                    'key': object_id
+                    'key': escape(object_id)
                 }
             )
 
@@ -235,6 +251,120 @@ class PageAdmin(admin.ModelAdmin):
             current_app=self.admin_site.name
         )
         return render_to_response(self.copy_form_template, context, 
+            context_instance=context_instance
+        )
+    
+    @csrf_protect_m
+    @transaction.commit_on_success
+    def merge_view(self, request, object_id, extra_context=None):
+        """
+        The 'merge' admin view for this model. Allows a user to merge a draft 
+        copy back over the original.
+        """
+        opts = self.model._meta
+        app_label = opts.app_label
+        
+        obj = self.get_object(request, unquote(object_id))
+        
+        # For our purposes, permission to merge is equivalent to 
+        # has_change_permisison and has_delete_permission.
+        if not self.has_change_permission(request, obj) \
+            or not self.has_delete_permission(request, obj) :
+            raise PermissionDenied
+            
+        if obj is None:
+            raise Http404(_(
+                '%(name)s object with primary key %(key)r does not exist.') %   
+                {
+                    'name': force_unicode(opts.verbose_name), 
+                    'key': escape(object_id)
+                }
+            )
+        
+        if not obj.is_draft_copy:
+            return HttpResponseBadRequest(_(
+                'The %s object could not be merged because it is not a'
+                'draft copy. There is nothing to merge it into.'
+            ) % force_unicode(opts.verbose_name))
+        
+        # Populate deleted_objects, a data structure of all related objects
+        # that will also be deleted when this copy is deleted.
+        all_objects = introspect.get_referencing_objects(obj.copy_of) 
+        all_objects.insert(0, obj.copy_of)
+        using = router.db_for_write(self.model)
+        (deleted_objects, perms_needed, protected) = get_deleted_objects(
+            all_objects, opts, request.user, self.admin_site, using
+        )
+        # Flatten nested list:
+        deleted_objects = map(
+            lambda i: hasattr(i, '__iter__') and i or [i],
+            deleted_objects
+        )
+        deleted_objects = chain(*deleted_objects)
+        deleted_objects = list(deleted_objects)
+        # ``get_deleted_objects`` is zealous and will add the draft copy to
+        # the list of things to be deleted. This needs to be removed.
+        obj_url = reverse("admin:pagemanager_page_change", args=(obj.pk,))
+        obj_name = unicode(obj)
+        deleted_objects = filter(
+            lambda link: obj_url not in link and obj_url not in link,
+            deleted_objects
+        )
+        
+        # Populate replacing_objects, a data structure of all related objects
+        # that will be replacing the originals.
+        replacing_objects = introspect.get_referencing_objects(obj)
+        replacing_objects.insert(0, obj)
+        (replacing_objects, perms_needed, protected) = get_deleted_objects(
+            replacing_objects, opts, request.user, self.admin_site, using
+        )
+        # Flatten nested list:
+        replacing_objects = map(
+            lambda i: hasattr(i, '__iter__') and i or [i],
+            replacing_objects
+        )
+        replacing_objects = chain(*replacing_objects)
+        replacing_objects = list(replacing_objects)
+
+        if request.POST: # The user has already confirmed the merge.
+            if perms_needed:
+                raise PermissionDenied
+            obj_display = force_unicode(obj) + " merged."
+            self.log_change(request, obj, obj_display)
+
+            original = obj.copy_of
+            self._merge_item(original, obj)
+
+            self.message_user(
+                request, 
+                _('The %(name)s "%(obj)s" was merged successfully.') % {
+                    'name': force_unicode(opts.verbose_name), 
+                    'obj': force_unicode(obj_display)
+                }
+            )
+            redirect_url = reverse("admin:pagemanager_page_change", 
+                args=(obj.pk,)
+            )
+            return HttpResponseRedirect(redirect_url)
+
+        context = {
+            "title": _("Are you sure?"),
+            "object_name": force_unicode(opts.verbose_name),
+            "object": obj,
+            "escaped_original": force_unicode(obj.copy_of), 
+            "deleted_objects": deleted_objects,
+            "replacing_objects": replacing_objects,
+            "perms_lacking": perms_needed,
+            "opts": opts,
+            "root_path": self.admin_site.root_path,
+            "app_label": app_label,
+        }
+        context.update(extra_context or {})
+        context_instance = template.RequestContext(
+            request, 
+            current_app=self.admin_site.name
+        )
+        return render_to_response(self.merge_form_template, context, 
             context_instance=context_instance
         )
     
