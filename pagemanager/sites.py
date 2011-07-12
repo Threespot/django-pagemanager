@@ -24,12 +24,14 @@ class PageManagerSite(object):
         else:
             if hasattr(page_layout, '_meta.abstract') and not \
                 page_layout._meta.abstract:
-                raise ImproperlyConfigured('The page layout %s is abstract, so it '
-                    'cannot be registered' % page_layout.__name__)
+                raise ImproperlyConfigured((
+                    'The page layout %s is abstract, so it '
+                    'cannot be registered'
+                ) % page_layout.__name__)
             if page_layout in self._registry:
-                raise AlreadyRegistered('The page layout %s has already been '
-                    'registered' % page_layout.__name__)
+                return False
             self._registry.append(page_layout)
+            return True
 
     def unregister(self, page_layout):
         """
