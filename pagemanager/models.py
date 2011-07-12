@@ -134,7 +134,10 @@ class Page(MPTTModel):
         """
         Retrieve the draft copy of this item if it exists.
         """
-        return self._default_manager.filter(copy_of__id=self.id)
+        copies = self._default_manager.filter(copy_of__id=self.id)
+        if copies:
+            return copies[0]
+        return None
     
     @classmethod
     def hide_from_applist(self):
