@@ -14,6 +14,7 @@ from reversion.admin import VersionAdmin
 
 from pagemanager import PageAdmin
 from pagemanager.app_settings import PAGEMANAGER_PAGE_MODEL, PAGEMANAGER_PAGE_MODELADMIN
+from pagemanager.forms import PageAdminFormMixin
 from pagemanager.models import Page
 from pagemanager.sites import pagemanager_site
 from pagemanager.permissions import get_permissions, get_lookup_function
@@ -36,7 +37,14 @@ class PageInline(generic.GenericStackedInline):
     model = PAGEMANAGER_PAGE_MODEL
     template = 'pagemanager/admin/inlines/page_inline.html'
     page_inline = True
-
+    
+    def __init__(self, *args, **kwargs):
+        super(PageInline, self).__init__(*args, **kwargs)
+        
+        class ComposedFormClass(PageAdminFormMixin, self.form):
+            pass
+        
+        self.form = ComposedFormClass
 
 # Dynamically register admins for each registered PageLayout subclass
 for page_layout in pagemanager_site._registry:

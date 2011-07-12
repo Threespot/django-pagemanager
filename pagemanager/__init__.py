@@ -62,7 +62,7 @@ class PageAdmin(admin.ModelAdmin):
     copy_form_template = 'pagemanager/admin/copy_confirmation.html'
     prepopulated_fields = {'slug': ('title',)}
     
-    def _copy_item(self, item):
+    def _copy_page(self, item):
         """ Create a draft copy of a published item to edit."""
         if not item.is_published:
             return None
@@ -77,13 +77,43 @@ class PageAdmin(admin.ModelAdmin):
         new_item.save()
         for obj in intr.get_referencing_objects(new_item):
             if not obj.__class__ is new_item.__class__:
-                obj.pk = None
-                obj.save()
+                copy_method = self._get_copy_method_name(obj)
+                obj_copy = getattr(self, copy_method, self._copy_object)(obj)
                 for data in intr.get_referencing_models(new_item.__class__):
-                    if data['model'] is obj.__class__:
+                    if data['model'] is obj_copy.__class__:
                         for m2m_field_name in data['m2m_field_names']:
-                            getattr(obj, m2m_field_name).add(new_item)
+                            getattr(obj_copy, m2m_field_name).add(new_item)
+                        for field_name in data['field_names']:
+                            setattr(obj_copy, field_name, new_item)
+                obj_copy.save()
         return new_item
+    
+    @staticmethod
+    def _get_copy_method_name(obj):
+        """
+        Attempts to determine what the method name to copy an object might be.
+        The following pattern is used::
+        
+            _copy_{{object app label}}_{{ object model name}}
+        
+        If this method exists on this class, it will be used instead of the 
+        generic ``_copy_object`` method.
+        """
+        return "_copy_%(app_label)s_%(module_name)s" % {
+            'app_label': obj._meta.app_label,
+            'module_name': obj._meta.module_name
+        }
+    
+    def _copy_object(self, obj):
+        """
+        Generic function to copy an object. All this does is set the pk to 
+        ``None``, save the object, and return it. This will be used to copy 
+        objects associated with a page unless an overriding method with the 
+        app label and model name is created.  
+        """
+        obj.pk = None
+        obj.save()
+        return obj
     
     def get_urls(self):
         from django.conf.urls.defaults import patterns, url
@@ -155,7 +185,7 @@ class PageAdmin(admin.ModelAdmin):
             
             obj_display = force_unicode(obj) + " copied."
             self.log_change(request, obj, obj_display)
-            copy = self._copy_item(obj)
+            copy = self._copy_page(obj)
 
             self.message_user(
                 request, 
@@ -207,21 +237,7 @@ class PageAdmin(admin.ModelAdmin):
         return render_to_response(self.copy_form_template, context, 
             context_instance=context_instance
         )
-
-    def get_form(self, request, obj=None, **kwargs):
-        """
-        Use a bit of metaclass fun to generate a new form class that uses
-        the ``forms.PageAdminFormMixin``. This is what is then passed to 
-        the ``modelform_factory`` to get our form.
-        """
-        composed_form_class = type(
-            self.form.__name__, 
-            (PageAdminFormMixin, self.form,),
-            dict(self.form.__dict__)
-        )
-        kwargs["form"] = composed_form_class
-        return super(PageAdmin, self).get_form(request, obj=obj, **kwargs)
-        
+    
     def render_change_form(self, request, context, add=False, change=False, \
         form_url='', obj=None):
         """
@@ -235,7 +251,7 @@ class PageAdmin(admin.ModelAdmin):
             context.update({'page_layouts': pagemanager_site})
         return super(PageAdmin, self).render_change_form(request, context, \
             add, change, form_url, obj)
-
+    
     def add_view(self, request, form_url='', extra_context=None):
         """
         Ensure the user is not trying to add a published or visible page if they 
