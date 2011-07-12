@@ -12,6 +12,7 @@ from pagemanager.permissions import get_published_status_name, \
     get_public_visibility_name
 from pagemanager.managers import PageManager
 
+
 class Page(MPTTModel):
     """
     The model of a page.
@@ -33,12 +34,12 @@ class Page(MPTTModel):
         ('public', 'Public'),
         ('private', 'Private'),
     ))
-    copy_of = models.OneToOneField('self', 
+    copy_of = models.OneToOneField('self',
         blank=True,
         null=True,
         on_delete=models.SET_NULL
     )
-    
+
     # Timestamps
     date_created = models.DateTimeField(auto_now_add=True)
     date_modified = models.DateTimeField(auto_now=True)
@@ -47,7 +48,7 @@ class Page(MPTTModel):
     layout_type = models.ForeignKey(ContentType, blank=True, null=True)
     object_id = models.PositiveIntegerField(blank=True, null=True)
     page_layout = generic.GenericForeignKey('layout_type', 'object_id')
-    
+
     objects = PageManager()
 
     class Meta:
@@ -100,15 +101,15 @@ class Page(MPTTModel):
     @property
     def path_prefix(self):
         return '/'.join([ancestor.slug for ancestor in self.get_ancestors()])
-    
+
     def is_visible(self):
         return self.visibility == get_public_visibility_name()
     is_visible.boolean = True
-    
+
     def is_published(self):
         return self.status == get_published_status_name()
     is_published.boolean = True
-    
+
     def is_unrestricted(self):
         """
         A page that is both published and visible; in other words, a page
@@ -116,7 +117,7 @@ class Page(MPTTModel):
         """
         return self.is_published() and self.is_visible()
     is_unrestricted.boolean = True
-    
+
     @property
     def page_status(self):
         """
@@ -130,7 +131,7 @@ class Page(MPTTModel):
             return "This draft copy is " + status + "."
         else:
             return "This item is " + status + "."
-    
+
     def publish(self):
         """Convenience method to publish a page"""
         published_status_name = get_published_status_name()
@@ -138,12 +139,12 @@ class Page(MPTTModel):
             self.status = published_status_name
             self.save()
             return True
-    
+
     def is_draft_copy(self):
         """ Is this item a draft copy?"""
         return bool(self.copy_of)
     is_draft_copy.boolean = True
-    
+
     def get_draft_copy(self):
         """
         Retrieve the draft copy of this item if it exists.
@@ -152,7 +153,7 @@ class Page(MPTTModel):
         if copies:
             return copies[0]
         return None
-    
+
     @classmethod
     def hide_from_applist(self):
         return True
@@ -251,8 +252,8 @@ class PageLayout(models.Model):
 
     def get_context_data(self, instance=None):
         """
-        If it's necessary to define the PageLayout's context dynamically, it can
-        be done here. Values here override values defined in the
+        If it's necessary to define the PageLayout's context dynamically, it
+        can be done here. Values here override values defined in the
         PageLayout.context property.
         """
         if self._pagemanager_meta.context:

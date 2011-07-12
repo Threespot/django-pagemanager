@@ -13,7 +13,8 @@ from django.utils.encoding import force_unicode
 from reversion.admin import VersionAdmin
 
 from pagemanager import PageAdmin
-from pagemanager.app_settings import PAGEMANAGER_PAGE_MODEL, PAGEMANAGER_PAGE_MODELADMIN
+from pagemanager.app_settings import PAGEMANAGER_PAGE_MODEL, \
+    PAGEMANAGER_PAGE_MODELADMIN
 from pagemanager.forms import PageAdminFormMixin
 from pagemanager.models import Page
 from pagemanager.sites import pagemanager_site
@@ -37,13 +38,13 @@ class PageInline(generic.GenericStackedInline):
     model = PAGEMANAGER_PAGE_MODEL
     template = 'pagemanager/admin/inlines/page_inline.html'
     page_inline = True
-    
+
     def __init__(self, *args, **kwargs):
         super(PageInline, self).__init__(*args, **kwargs)
-        
+
         class ComposedFormClass(PageAdminFormMixin, self.form):
             pass
-        
+
         self.form = ComposedFormClass
 
 # Dynamically register admins for each registered PageLayout subclass
@@ -67,54 +68,52 @@ for page_layout in pagemanager_site._registry:
             """
             return HttpResponseRedirect(reverse('admin:index'))
 
-        
         def _get_page_formset(self, request):
             for fs in self.get_formsets(request):
                 if fs.model == Page:
                     return fs
             return None
-        
+
         def change_view(self, request, object_id, extra_context=None):
             """
             Adds some initial permissions checks to ensure that users can't:
-            
+
                 1. view objects they don't have permissions on
                 2. change item's publication status without needed permissions
                 3. change item's visibility status without needed permissions
-            
+
             """
-            
             obj = self.get_object(request, unquote(object_id))
             obj_pages = obj.page.all()
             if len(obj_pages) == 1:
                 page = obj_pages[0]
             else:
                 val = obj_pages and "Zero" or "Multiple"
-                raise ValueError, (
+                raise ValueError((
                     "%s pages relate to this layout. Only one page can "
                     "relate to this layout and at least one page must do so."
-                ) % val
-            
+                )) % val
+
             lookup_perm = get_lookup_function(request.user, get_permissions())
-            
+
             # Reject users who don't have permission to view the page becuase
             # it's unpublished or invisible.
             if not page.is_visible and not lookup_perm('view_private_pages'):
                 # FIXME: remove details about exception after testing.
-                raise PermissionDenied, "Can't view invisible pages."
+                raise PermissionDenied("Can't view invisible pages.")
             if not page.is_published and not lookup_perm('view_draft_pages'):
                 # FIXME: remove details about exception after testing.
-                raise PermissionDenied, "Can't view unpublished pages."
-            
+                raise PermissionDenied("Can't view unpublished pages.")
+
             if request.method == 'POST':
-                # If a user who doesn't have permissions to change is posting 
+                # If a user who doesn't have permissions to change is posting
                 # data to this view, raise a PermissionDenied.
                 if page.is_published and not lookup_perm(
                     'modify_published_pages'
                 ):
                     # FIXME: remove details about exception after testing.
-                    raise PermissionDenied, "Can't modify published pages."
-                
+                    raise PermissionDenied("Can't modify published pages.")
+
                 formset = self._get_page_formset(request)
                 prefix = formset.get_default_prefix()
                 ModelForm = self.get_form(request, obj)
@@ -123,16 +122,16 @@ for page_layout in pagemanager_site._registry:
                 opts = self.model._meta
                 this_url = reverse(
                     "admin:%s_%s_change" % (opts.app_label, opts.module_name),
-                    args = (object_id,)
+                    args=(object_id,)
                 )
-                
+
                 def value_filter(name, prefix=None):
                     def f(obj):
                         return obj.startswith(prefix) and obj.endswith(name)
                     return f
                 get_value_filter = partial(value_filter, prefix=prefix)
-                
-                # Verify that users can't change status if they don't have 
+
+                # Verify that users can't change status if they don't have
                 # permissions to do so.
                 key_match = filter(get_value_filter('status'), changed_data)
                 if key_match and changed_data[key_match[0]] != page.status:
@@ -143,26 +142,29 @@ for page_layout in pagemanager_site._registry:
                         )
                         messages.add_message(request, messages.ERROR, message)
                         return HttpResponseRedirect(this_url)
-                
-                # Verify that users can't change visibility if they don't have 
+
+                # Verify that users can't change visibility if they don't have
                 # permissions to do so.
-                key_match = filter(get_value_filter('visibility'), changed_data)
+                key_match = filter(
+                    get_value_filter('visibility'),
+                    changed_data
+                )
                 if key_match and changed_data[key_match[0]] != page.visibility:
                     if not lookup_perm('change_visibility'):
                         message = (
-                            "You don't have permission to change the visibility"
-                            " of this page."
-                        )                        
+                            "You don't have permission to change the "
+                            "visibility of this page."
+                        )
                         messages.add_message(request, messages.ERROR, message)
                         return HttpResponseRedirect(this_url)
-            
+
             # All permissions checks have passed.
             return super(PageLayoutAdmin, self).change_view(
                 request,
                 object_id,
                 extra_context=None
             )
-        
+
         def add_view(self, request, form_url='', extra_context=None):
             """
             Redirect the PageLayout add_view to the Page add_view
@@ -199,10 +201,11 @@ for page_layout in pagemanager_site._registry:
             elif "_addanother" in request.POST:
                 self.message_user(request, msg + ' ' + \
                     "You may add another page below.")
-                return HttpResponseRedirect(reverse('admin:pagemanager_page_add'))
+                return HttpResponseRedirect(
+                    reverse('admin:pagemanager_page_add')
+                )
             else:
                 return HttpResponseRedirect(reverse('admin:index'))
-
 
     # Overrides provided in the PageLayout subclass' PageManagerMeta class
     meta = page_layout._meta

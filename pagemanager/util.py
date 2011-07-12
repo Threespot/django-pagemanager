@@ -4,6 +4,7 @@ from django.conf import settings
 from pagemanager import PageAdmin
 from pagemanager.models import Page
 
+
 def get_pagemanager_model():
     """
     Returns the model to be used by pagemanager. It must be either
@@ -47,4 +48,3 @@ def get_pagemanager_modeladmin():
                     'pagemanager.admin.PageAdmin'
                 )
     return PageAdmin
-

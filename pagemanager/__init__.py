@@ -26,6 +26,7 @@ from pagemanager.permissions import get_permissions, get_lookup_function, \
     get_unpublished_status_name
 from pagemanager.sites import pagemanager_site
 
+
 def autodiscover():
     """
     Auto-discover registered subclasses of PageLayout living in models.py files
@@ -65,7 +66,7 @@ class PageAdmin(admin.ModelAdmin):
     copy_form_template = 'pagemanager/admin/copy_confirmation.html'
     merge_form_template = "pagemanager/admin/merge_confirmation.html"
     prepopulated_fields = {'slug': ('title',)}
-    
+
     def _copy_page(self, item):
         """ Create a draft copy of a published item to edit."""
         if not item.is_published:
@@ -76,7 +77,8 @@ class PageAdmin(admin.ModelAdmin):
         new_item.copy_of = item
         new_item.title += _(" (draft copy)")
         new_item.slug += "-draft-copy"
-        # Position the new item as the next neighbor of the original
+        # Position the new item as the next neighbor of
+        # the original
         new_item.insert_at(item, position='right')
         new_item.save()
         for obj in introspect.get_referencing_objects(new_item):
@@ -93,29 +95,29 @@ class PageAdmin(admin.ModelAdmin):
                             setattr(obj_copy, field_name, new_item)
                 obj_copy.save()
         return new_item
-    
+
     @staticmethod
     def _get_copy_method_name(obj):
         """
         Attempts to determine what the method name to copy an object might be.
         The following pattern is used::
-        
+
             _copy_{{object app label}}_{{ object model name}}
-        
-        If this method exists on this class, it will be used instead of the 
+
+        If this method exists on this class, it will be used instead of the
         generic ``_copy_object`` method.
         """
         return "_copy_%(app_label)s_%(module_name)s" % {
             'app_label': obj._meta.app_label,
             'module_name': obj._meta.module_name
         }
-    
+
     def _copy_object(self, obj):
         """
-        Generic function to copy an object. All this does is set the pk to 
-        ``None``, save the object, and return it. This will be used to copy 
-        objects associated with a page unless an overriding method with the 
-        app label and model name is created.  
+        Generic function to copy an object. All this does is set the pk to
+        ``None``, save the object, and return it. This will be used to copy
+        objects associated with a page unless an overriding method with the
+        app label and model name is created.
         """
         obj.pk = None
         obj.save()
@@ -130,10 +132,12 @@ class PageAdmin(admin.ModelAdmin):
         copy.slug = original.slug
         copy.publish()
         return copy
-    
+
     def get_urls(self):
         from django.conf.urls.defaults import patterns, url
-        parents_orders_vw = self.admin_site.admin_view(self.parents_orders_view)
+        parents_orders_vw = self.admin_site.admin_view(
+            self.parents_orders_view
+        )
         draft_copy_vw = self.admin_site.admin_view(self.copy_view)
         draft_merge_vw = self.admin_site.admin_view(self.merge_view)
         info = self.model._meta.app_label, self.model._meta.module_name
@@ -158,62 +162,62 @@ class PageAdmin(admin.ModelAdmin):
                 page.save()
             return HttpResponse()
         raise Http404
-    
+
     @csrf_protect_m
     @transaction.commit_on_success
     def copy_view(self, request, object_id, extra_context=None):
         """
-        Create a draft copy of the item after user has confirmed. 
+        Create a draft copy of the item after user has confirmed.
         """
         opts = self.model._meta
         app_label = opts.app_label
 
-        obj = self.get_object(request, unquote(object_id))    
+        obj = self.get_object(request, unquote(object_id))
 
-        # For our purposes, permission to copy is equivalent to 
+        # For our purposes, permission to copy is equivalent to
         # permission to add.
         if not self.has_add_permission(request):
             raise PermissionDenied
 
         if obj is None:
             raise Http404(_(
-                '%(name)s object with primary key %(key)r does not exist.') %   
+                '%(name)s object with primary key %(key)r does not exist.') %
                 {
-                    'name': force_unicode(opts.verbose_name), 
+                    'name': force_unicode(opts.verbose_name),
                     'key': escape(object_id)
                 }
             )
 
-        if request.POST: # The user has already confirmed the copy.
+        if request.POST:  # The user has already confirmed the copy.
             if obj.is_draft_copy():
                 self.message_user(
-                    request, 
+                    request,
                     _('You cannot copy a draft copy.')
-                )            
+                )
                 return HttpResponseRedirect(request.path)
-            
+
             if obj.get_draft_copy():
                 self.message_user(
-                    request, 
+                    request,
                     _('A draft copy already exists.')
                 )
                 return HttpResponseRedirect(request.path)
-            
+
             obj_display = force_unicode(obj) + " copied."
             self.log_change(request, obj, obj_display)
             copy = self._copy_page(obj)
 
             self.message_user(
-                request, 
+                request,
                 _('The %(name)s "%(obj)s" was copied successfully.') % {
-                    'name': force_unicode(opts.verbose_name), 
+                    'name': force_unicode(opts.verbose_name),
                     'obj': force_unicode(obj_display)
                 }
             )
 
             url = reverse(
                 "admin:%s_%s_change" % (
-                    app_label, 
+                    app_label,
                     self.model._meta.module_name
                 ),
                 args=(copy.id,)
@@ -225,7 +229,7 @@ class PageAdmin(admin.ModelAdmin):
             title = _("Draft Copy Exists")
             edit_copy_url = reverse(
                 "admin:%s_%s_change" % (
-                    app_label, 
+                    app_label,
                     self.model._meta.module_name
                 ),
                 args=(self.model.objects.filter(copy_of=obj)[0].id,)
@@ -247,49 +251,49 @@ class PageAdmin(admin.ModelAdmin):
         }
         context.update(extra_context or {})
         context_instance = template.RequestContext(
-            request, 
+            request,
             current_app=self.admin_site.name
         )
-        return render_to_response(self.copy_form_template, context, 
+        return render_to_response(self.copy_form_template, context,
             context_instance=context_instance
         )
-    
+
     @csrf_protect_m
     @transaction.commit_on_success
     def merge_view(self, request, object_id, extra_context=None):
         """
-        The 'merge' admin view for this model. Allows a user to merge a draft 
+        The 'merge' admin view for this model. Allows a user to merge a draft
         copy back over the original.
         """
         opts = self.model._meta
         app_label = opts.app_label
-        
+
         obj = self.get_object(request, unquote(object_id))
-        
-        # For our purposes, permission to merge is equivalent to 
+
+        # For our purposes, permission to merge is equivalent to
         # has_change_permisison and has_delete_permission.
         if not self.has_change_permission(request, obj) \
-            or not self.has_delete_permission(request, obj) :
+            or not self.has_delete_permission(request, obj):
             raise PermissionDenied
-            
+
         if obj is None:
             raise Http404(_(
-                '%(name)s object with primary key %(key)r does not exist.') %   
+                '%(name)s object with primary key %(key)r does not exist.') %
                 {
-                    'name': force_unicode(opts.verbose_name), 
+                    'name': force_unicode(opts.verbose_name),
                     'key': escape(object_id)
                 }
             )
-        
+
         if not obj.is_draft_copy:
             return HttpResponseBadRequest(_(
                 'The %s object could not be merged because it is not a'
                 'draft copy. There is nothing to merge it into.'
             ) % force_unicode(opts.verbose_name))
-        
+
         # Populate deleted_objects, a data structure of all related objects
         # that will also be deleted when this copy is deleted.
-        all_objects = introspect.get_referencing_objects(obj.copy_of) 
+        all_objects = introspect.get_referencing_objects(obj.copy_of)
         all_objects.insert(0, obj.copy_of)
         using = router.db_for_write(self.model)
         (deleted_objects, perms_needed, protected) = get_deleted_objects(
@@ -310,7 +314,7 @@ class PageAdmin(admin.ModelAdmin):
             lambda link: obj_url not in link and obj_url not in link,
             deleted_objects
         )
-        
+
         # Populate replacing_objects, a data structure of all related objects
         # that will be replacing the originals.
         replacing_objects = introspect.get_referencing_objects(obj)
@@ -326,7 +330,7 @@ class PageAdmin(admin.ModelAdmin):
         replacing_objects = chain(*replacing_objects)
         replacing_objects = list(replacing_objects)
 
-        if request.POST: # The user has already confirmed the merge.
+        if request.POST:  # The user has already confirmed the merge.
             if perms_needed:
                 raise PermissionDenied
             obj_display = force_unicode(obj) + " merged."
@@ -336,13 +340,13 @@ class PageAdmin(admin.ModelAdmin):
             self._merge_item(original, obj)
 
             self.message_user(
-                request, 
+                request,
                 _('The %(name)s "%(obj)s" was merged successfully.') % {
-                    'name': force_unicode(opts.verbose_name), 
+                    'name': force_unicode(opts.verbose_name),
                     'obj': force_unicode(obj_display)
                 }
             )
-            redirect_url = reverse("admin:pagemanager_page_change", 
+            redirect_url = reverse("admin:pagemanager_page_change",
                 args=(obj.pk,)
             )
             return HttpResponseRedirect(redirect_url)
@@ -351,7 +355,7 @@ class PageAdmin(admin.ModelAdmin):
             "title": _("Are you sure?"),
             "object_name": force_unicode(opts.verbose_name),
             "object": obj,
-            "escaped_original": force_unicode(obj.copy_of), 
+            "escaped_original": force_unicode(obj.copy_of),
             "deleted_objects": deleted_objects,
             "replacing_objects": replacing_objects,
             "perms_lacking": perms_needed,
@@ -361,13 +365,13 @@ class PageAdmin(admin.ModelAdmin):
         }
         context.update(extra_context or {})
         context_instance = template.RequestContext(
-            request, 
+            request,
             current_app=self.admin_site.name
         )
-        return render_to_response(self.merge_form_template, context, 
+        return render_to_response(self.merge_form_template, context,
             context_instance=context_instance
         )
-    
+
     def render_change_form(self, request, context, add=False, change=False, \
         form_url='', obj=None):
         """
@@ -381,15 +385,15 @@ class PageAdmin(admin.ModelAdmin):
             context.update({'page_layouts': pagemanager_site})
         return super(PageAdmin, self).render_change_form(request, context, \
             add, change, form_url, obj)
-    
+
     def add_view(self, request, form_url='', extra_context=None):
         """
-        Ensure the user is not trying to add a published or visible page if they 
-        lack the necessary permissions. 
+        Ensure the user is not trying to add a published or visible page if
+        they lack the necessary permissions.
         """
         if request.method == 'POST':
             lookup_perm = get_lookup_function(request.user, get_permissions())
-            # In evaluating permissions for status and visibility, it's not 
+            # In evaluating permissions for status and visibility, it's not
             # necessary to do more than raise a 403 if the user does not have
             # the necessary permissions; status and visibility are disabled
             # client side, so if they're not what they should be, the user is
@@ -399,21 +403,22 @@ class PageAdmin(admin.ModelAdmin):
                 if form.is_valid():
                     is_published_value = get_published_status_name()
                     if form.cleaned_data.get('status') == is_published_value:
-                        raise PermissionDenied, "Can't create published pages."
+                        raise PermissionDenied("Can't create published pages.")
             if not lookup_perm('change_visibility'):
                 form = self.get_form(request)(request.POST, request.FILES)
                 if form.is_valid():
                     is_public_value = get_public_visibility_name()
                     if form.cleaned_data.get('visibility') == is_public_value:
-                        raise PermissionDenied, "Can't create public pages."
-        return super(PageAdmin, self).add_view(request, 
+                        raise PermissionDenied("Can't create public pages.")
+        return super(PageAdmin, self).add_view(request,
             form_url=form_url,
             extra_context=extra_context
         )
-    
+
     def changelist_view(self, request, extra_context=None):
         """
-        Redirect the fake Page changelist_view to the real Page changelist_view.
+        Redirect the fake Page changelist_view to the real Page
+        ``changelist_view``.
         """
         return HttpResponseRedirect(reverse('admin:index'))
 

@@ -3,7 +3,9 @@ from django.http import Http404
 
 from pagemanager import app_settings
 
+
 model = app_settings.PAGEMANAGER_PAGE_MODEL
+
 
 class PageView(DetailView):
     context_object_name = 'page'
@@ -27,7 +29,7 @@ class PageView(DetailView):
         split = self.kwargs['path'].split('/')
 
         while count <= len(split):
-            newslug = split[count*-1:self.zero_is_none(count*-1+1)]
+            newslug = split[count * -1:self.zero_is_none(count * -1 + 1)]
             queryset = queryset.filter(slug=newslug[0])
             if not len(queryset):
                 raise Http404
