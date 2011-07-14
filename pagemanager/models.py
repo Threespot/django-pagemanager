@@ -71,6 +71,20 @@ class Page(MPTTModel):
     def __unicode__(self):
         return self.title
 
+    def clean(self):
+        """
+        Only permits one page to be marked as the homepage.
+        """
+        if self.is_homepage:
+            try:
+                old_homepage = Page.objects.get(is_homepage=True)
+            except Page.DoesNotExist:
+                pass
+            else:
+                old_homepage.is_homepage = False
+                old_homepage.save()
+        return super(Page, self).clean()
+
     def get_absolute_url(self):
         return '/' + self.path_prefix
 
