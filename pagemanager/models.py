@@ -12,7 +12,6 @@ from pagemanager.permissions import get_published_status_name, \
     get_public_visibility_name
 from pagemanager.managers import PageManager
 
-
 class Page(MPTTModel):
     """
     The model of a page.
@@ -278,3 +277,17 @@ class PageLayout(models.Model):
         Returns a value that can be used for the layout's HTML ID.
         """
         return slugify(self._pagemanager_meta.name)
+
+
+class PlaceholderPage(PageLayout):
+    """
+    Completely null page layout; typically used for pages that need to live in
+    the navigation structure, but will be superceded by other patterns in the
+    urlconf.
+    """
+    class Meta:
+        verbose_name = 'Placeholder'
+        verbose_name_plural = 'Placeholders'
+
+    class PageManagerMeta:
+        name = 'Placeholder Page'

@@ -18,16 +18,16 @@ class PageManagerSite(object):
         will raise AlreadyRegistered. If it is an abstract class, this will
         raise ImproperlyConfigured.
         """
-        if not issubclass(page_layout, PageLayout):
-            raise ImproperlyConfigured((
-                'The page layout %s is not a subclass of '
-                'the PageLayout abstract model.'
-            ) % page_layout.__name__)
 
         if hasattr(page_layout, '__iter__'):
             for item in page_layout:
                 self.register(item)
         else:
+            if not issubclass(page_layout, PageLayout):
+                raise ImproperlyConfigured((
+                    'The page layout %s is not a subclass of '
+                    'the PageLayout abstract model.'
+                ) % page_layout.__name__)
             if hasattr(page_layout._meta, 'abstract') and \
                 page_layout._meta.abstract:
                 raise ImproperlyConfigured((
