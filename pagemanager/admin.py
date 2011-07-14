@@ -92,20 +92,19 @@ class PageLayoutAdmin(VersionAdmin):
             )) % val
 
         lookup_perm = get_lookup_function(request.user, get_permissions())
-
         # Reject users who don't have permission to view the page becuase
         # it's unpublished or invisible.
-        if not page.is_visible and not lookup_perm('view_private_pages'):
+        if not page.is_visible() and not lookup_perm('view_private_pages'):
             # FIXME: remove details about exception after testing.
             raise PermissionDenied("Can't view invisible pages.")
-        if not page.is_published and not lookup_perm('view_draft_pages'):
+        if not page.is_published() and not lookup_perm('view_draft_pages'):
             # FIXME: remove details about exception after testing.
             raise PermissionDenied("Can't view unpublished pages.")
 
         if request.method == 'POST':
             # If a user who doesn't have permissions to change is posting
             # data to this view, raise a PermissionDenied.
-            if page.is_published and not lookup_perm(
+            if page.is_published() and not lookup_perm(
                 'modify_published_pages'
             ):
                 # FIXME: remove details about exception after testing.
