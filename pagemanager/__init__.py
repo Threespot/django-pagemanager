@@ -59,7 +59,7 @@ class PageAdmin(admin.ModelAdmin):
             'fields': ('status', 'visibility',)
         }),
         ('Attributes', {
-            'fields': ('parent',)
+            'fields': ('parent', 'is_homepage',)
         }),
     )
     change_form_template = 'pagemanager/admin/change_form.html'
