@@ -2,7 +2,7 @@ from django.contrib.contenttypes.generic import GenericStackedInline
 from django.core.exceptions import ImproperlyConfigured
 
 from pagemanager.exceptions import AlreadyRegistered, NotRegistered
-
+from pagemanager.models import PageLayout
 
 class PageManagerSite(object):
 
@@ -18,11 +18,17 @@ class PageManagerSite(object):
         will raise AlreadyRegistered. If it is an abstract class, this will
         raise ImproperlyConfigured.
         """
+        if not issubclass(page_layout, PageLayout):
+            raise ImproperlyConfigured((
+                'The page layout %s is not a subclass of '
+                'the PageLayout abstract model.'
+            ) % page_layout.__name__)
+
         if hasattr(page_layout, '__iter__'):
             for item in page_layout:
                 self.register(item)
         else:
-            if hasattr(page_layout, '_meta.abstract') and not \
+            if hasattr(page_layout._meta, 'abstract') and \
                 page_layout._meta.abstract:
                 raise ImproperlyConfigured((
                     'The page layout %s is abstract, so it '
