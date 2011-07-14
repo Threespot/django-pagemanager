@@ -175,6 +175,7 @@ class PageLayoutMeta(object):
     inlines = None
     exclude = None
     formfield_overrides = None
+    readonly_fields = None
 
     def __init__(self, opts, **kwargs):
         if opts:

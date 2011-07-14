@@ -58,6 +58,7 @@ class PageLayoutAdmin(VersionAdmin):
     exclude = []
     verbose_name = None
     verbose_name_meta = None
+    readonly_fields = []
 
     def changelist_view(self, request, extra_context=None):
         """
@@ -208,7 +209,7 @@ for page_layout in pagemanager_site._registry:
     # Overrides provided in the PageLayout subclass' PageManagerMeta class
     meta = page_layout._meta
     pm_meta = page_layout._pagemanager_meta
-    # Dynamically create a subclass of PageLayoutAdmin for this 
+    # Dynamically create a subclass of PageLayoutAdmin for this
     # particular layout. The reason we do this is that we don't want
     # to pollute PageLayoutAdmin with layout-sepcific settings. Otherwise
     # settings from one layout might bleed through to the next.
@@ -227,6 +228,8 @@ for page_layout in pagemanager_site._registry:
         layoutadmin_cls.verbose_name_plural = meta.verbose_name_plural
     if pm_meta.inlines:
         layoutadmin_cls.inlines = PageLayoutAdmin.inlines + pm_meta.inlines
+    if pm_meta.readonly_fields:
+        PageLayoutAdmin.readonly_fields = pm_meta.readonly_fields
     if pm_meta.exclude:
         layoutadmin_cls.exclude = PageLayoutAdmin.exclude + pm_meta.exclude
     admin.site.register(page_layout, PageLayoutAdmin)
