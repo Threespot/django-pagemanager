@@ -10,5 +10,5 @@ urlpatterns = patterns('pagemanager.views',
 
 def pagemanager_urlpatterns():
     return patterns('',
-        (r'^(?P<path>.+)/$', PageView.as_view()),
+        (r'^(?P<path>.+)$', PageView.as_view()),
     )
