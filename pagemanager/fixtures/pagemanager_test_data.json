@@ -1,0 +1,114 @@
+[
+    {
+        "pk": 1, 
+        "model": "pagemanager.page", 
+        "fields": {
+            "status": "draft", 
+            "rght": 6, 
+            "layout_type": 10, 
+            "parent": null, 
+            "title": "Root Page", 
+            "date_modified": "2011-07-13 07:23:39", 
+            "visibility": "public", 
+            "order": 99999, 
+            "lft": 1, 
+            "object_id": 1, 
+            "tree_id": 1, 
+            "date_created": "2011-07-13 07:23:39", 
+            "copy_of": null, 
+            "level": 0, 
+            "slug": "root-page"
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "pagemanager.page", 
+        "fields": {
+            "status": "draft", 
+            "rght": 5, 
+            "layout_type": 10, 
+            "parent": 24, 
+            "title": "Child Page", 
+            "date_modified": "2011-07-13 07:23:48", 
+            "visibility": "public", 
+            "order": 99999, 
+            "lft": 2, 
+            "object_id": 2, 
+            "tree_id": 2, 
+            "date_created": "2011-07-13 07:23:48", 
+            "copy_of": null, 
+            "level": 1, 
+            "slug": "child-page"
+        }
+    }, 
+    {
+        "pk": 3, 
+        "model": "pagemanager.page", 
+        "fields": {
+            "status": "draft", 
+            "rght": 4, 
+            "layout_type": 10, 
+            "parent": 25, 
+            "title": "Child of Child Page", 
+            "date_modified": "2011-07-13 07:24:04", 
+            "visibility": "public", 
+            "order": 99999, 
+            "lft": 3, 
+            "object_id": 3, 
+            "tree_id": 1, 
+            "date_created": "2011-07-13 07:24:04", 
+            "copy_of": null, 
+            "level": 2, 
+            "slug": "child-child-page"
+        }
+    }, 
+    {
+        "pk": 4, 
+        "model": "pagemanager.page", 
+        "fields": {
+            "status": "draft", 
+            "rght": 2, 
+            "layout_type": 10, 
+            "parent": null, 
+            "title": "Neighbor Page", 
+            "date_modified": "2011-07-13 07:24:27", 
+            "visibility": "public", 
+            "order": 99999, 
+            "lft": 1, 
+            "object_id": 4, 
+            "tree_id": 2, 
+            "date_created": "2011-07-13 07:24:27", 
+            "copy_of": null, 
+            "level": 0, 
+            "slug": "neighbor-page"
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "pagemanager.testhomepagelayout", 
+        "fields": {
+            "body": "" 
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "pagemanager.testhomepagelayout", 
+        "fields": {
+            "body": "" 
+        }
+    }, 
+    {
+        "pk": 3, 
+        "model": "pagemanager.testhomepagelayout", 
+        "fields": {
+            "body": "" 
+        }
+    }, 
+    {
+        "pk": 4, 
+        "model": "pagemanager.testhomepagelayout", 
+        "fields": {
+            "body": "" 
+        }
+    }
+]
