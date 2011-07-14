@@ -236,19 +236,15 @@ class PageLayout(models.Model):
         can be done here. Values here override values defined in the
         PageLayout.thumbnail property.
         """
-        if self._pagemanager_meta.thumbnail:
-            return self._pagemanager_meta.thumbnail
-        return None
+        return getattr(self._pagemanager_meta, 'thumbnail', None)
 
-    def get_template_file(self, instance=None):
+    def get_template_name(self, instance=None):
         """
         If it's necessary to define the PageLayout's template file dynamically,
         it can be done here. Values here override values defined in the
         PageLayout.template_file property.
         """
-        if self._pagemanager_meta.template_file:
-            return self._pagemanager_meta.template_file
-        return None
+        return getattr(self._pagemanager_meta, 'template_name', None)
 
     def get_context_data(self, instance=None):
         """
