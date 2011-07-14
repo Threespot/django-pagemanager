@@ -39,6 +39,7 @@ class Page(MPTTModel):
         null=True,
         on_delete=models.SET_NULL
     )
+    is_homepage = models.BooleanField(default=False)
 
     # Timestamps
     date_created = models.DateTimeField(auto_now_add=True)
