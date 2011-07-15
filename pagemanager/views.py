@@ -36,6 +36,12 @@ class PageView(DetailView):
             elif len(queryset) == 1:
                 return queryset[0]
 
+    def dispatch(self, request, *args, **kwargs):
+        response = super(PageView, self).dispatch(request, *args, **kwargs)
+        if self.get_object().is_homepage:
+            return redirect(reverse('pagemanager_homepage'))
+        return response
+
 
 class HomepageView(DetailView):
     """
