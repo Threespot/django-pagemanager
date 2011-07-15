@@ -1,6 +1,6 @@
 from django.conf.urls.defaults import *
 
-from pagemanager.views import PageView
+from pagemanager.views import HomepageView, PageView
 
 
 urlpatterns = patterns('pagemanager.views',
@@ -10,5 +10,6 @@ urlpatterns = patterns('pagemanager.views',
 
 def pagemanager_urlpatterns():
     return patterns('',
-        (r'^(?P<path>.+)$', PageView.as_view()),
+        url(r'^$', HomepageView.as_view(), name='pagemanager_homepage'),
+        url(r'^(?P<path>.+)/$', PageView.as_view(), name='pagemanager_page'),
     )
