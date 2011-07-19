@@ -23,6 +23,7 @@ class Page(MPTTModel):
         related_name='children')
     order = models.IntegerField(null=True, blank=True, default=99999)
     title = models.CharField(max_length=256)
+    description = models.TextField(null=True, blank=True)
     slug = models.SlugField(max_length=32)
     status = models.CharField(max_length=32, default='draft', choices=(
         ('draft', 'Draft'),
