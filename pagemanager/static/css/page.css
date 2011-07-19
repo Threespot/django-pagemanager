@@ -9,13 +9,6 @@
 .page-fields{
     position: relative;
 }
-.page-fields > fieldset{
-    border: 0;
-}
-.page-fields > fieldset > .form-row{
-    padding: 0;
-    border: 0;
-}
 .submit-row{
     clear: both;
 }
@@ -42,7 +35,7 @@
     }
         .basics .title input{
             display: block;
-            width: 611px;
+            width: 623px;
             padding: 5px 6px;
             font-size: 17px;
         }
@@ -168,6 +161,12 @@ form .layout.aligned li{
     .ui-sortable-helper .summary{
         border-top: 1px solid #DEDEDE;
     }
+
+.cke_skin_kama a.cke_toolbox_collapser,
+.cke_skin_kama a:hover.cke_toolbox_collapser,
+.cke_skin_kama .cke_resizer{
+    right: 10px;
+}
 
 .clearfix:before,
 .clearfix:after{
