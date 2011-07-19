@@ -223,7 +223,6 @@ for page_layout in pagemanager_site._registry:
     )
     if pm_meta.formfield_overrides:
         layoutadmin_cls.formfield_overrides.update(pm_meta.formfield_overrides)
-    import pdb; pdb.set_trace()
     if pm_meta.fieldsets:
         layoutadmin_cls.fieldsets = pm_meta.fieldsets
     if meta.verbose_name:
