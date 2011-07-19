@@ -62,13 +62,23 @@ class AppListNode(template.Node):
         request = context['request']
         user = request.user
         for model, model_admin in site._registry.items():
-            app_label = model._meta.app_label
+
+            # Try to retrieve the __admin_name__ property from the
+            # model's app's __init__.py
+            to_import = '.'.join(model.__module__.split('.')[:-1])
+            try:
+                app_label = __import__(to_import).__APP_NAME__
+            except AttributeError:
+                app_label = model._meta.app_label.title()
+
             has_module_perms = user.has_module_perms(app_label)
             hidden_model = hasattr(model, 'hide_from_applist') and \
                 model.hide_from_applist()
             if has_module_perms and not hidden_model:
                 perms = model_admin.get_model_perms(request)
                 if True in perms.values():
+
+
                     model_dict = {
                         'name': capfirst(model._meta.verbose_name_plural),
                         'admin_url': mark_safe('%s/%s/' % (app_label, model.__name__.lower())),
@@ -78,7 +88,7 @@ class AppListNode(template.Node):
                         app_dict[app_label]['models'].append(model_dict)
                     else:
                         app_dict[app_label] = {
-                            'name': app_label.title(),
+                            'name': app_label,
                             'app_url': app_label + '/',
                             'has_module_perms': has_module_perms,
                             'models': [model_dict],
@@ -110,14 +120,14 @@ class LookupPermissionsNode(template.Node):
     def __init__(self, node_var_name, user_var_name):
         self.node_var = template.Variable(node_var_name)
         self.user_var = template.Variable(user_var_name)
-    
+
     @staticmethod
     def _rename_permissions(permissions_dict, model_name):
         """
-        This function is used to ensure that the variable names created in 
-        the template context are standardized. We deal with permissions that 
+        This function is used to ensure that the variable names created in
+        the template context are standardized. We deal with permissions that
         have the name of the model in them, but model name may change. We want
-        to have the context variable names always be the same, even though they 
+        to have the context variable names always be the same, even though they
         are generated from the actual permission names. Therefore we replace
         any appearance of the model name or "page" with "object".
         """
@@ -131,7 +141,7 @@ class LookupPermissionsNode(template.Node):
                 permissions_dict[new_name] = permission
                 del permissions_dict[permission_name]
         return permissions_dict
-    
+
     def render(self, context):
         permission_names = get_permissions()
         permissions = dict([(k, False) for k in permission_names.keys()])
@@ -147,18 +157,18 @@ class LookupPermissionsNode(template.Node):
             for permission_name, permission in permissions.items():
                 context[permission_name] = permission
             return ''
-        # If node variable can't be resolved, some permissions can still 
+        # If node variable can't be resolved, some permissions can still
         # be useful.
         try:
             node = self.node_var.resolve(context)
         except template.VariableDoesNotExist:
             node = None
             opts = get_pagemanager_model()._meta
-        else: 
+        else:
             opts = node.__class__._meta
-        
+
         lookup_perm = get_lookup_function(user,permission_names)
-        
+
         # Shortcut: if the user is a superuser we can just set all permissions
         # to True and be done with it.
         if user.is_superuser:
@@ -168,7 +178,7 @@ class LookupPermissionsNode(template.Node):
             for permission_name, permission in permissions.items():
                 context[permission_name] = True
             return ''
-        
+
         # Determine visibility permissions.
         if node:
             if not node.is_visible() and lookup_perm('view_private_pages'):
@@ -178,7 +188,7 @@ class LookupPermissionsNode(template.Node):
             if (node.is_visible() or permissions['view_private_pages']) and \
                 (node.is_published() or permissions['view_draft_pages']):
                 permissions['view_page'] = True
-        
+
         # Determine standard model permissions.
         for verb in ('add', 'change', 'delete'):
             permission_name = "%s_%s" % (verb, opts.module_name)
@@ -195,11 +205,11 @@ def lookup_permissions(parser, token):
     """
     A template tag node that provides info about the types of permissions
     the given user has on the given node. Example usage:
-        
+
         {% lookup_permissions node user %}
-    
+
     This sets the following boolean variables in the template context:
-    
+
         'add_object'
         'delete_object'
         'change_object'
@@ -209,7 +219,7 @@ def lookup_permissions(parser, token):
         'change_visibility'
         'change_status'
         'modify_published_objects'
-        
+
     """
     try:
         tag_name, node_var_name, user_var_name = token.split_contents()
@@ -219,5 +229,5 @@ def lookup_permissions(parser, token):
             " the node to find permissions for and the user."
         )
         raise template.TemplateSyntaxError, message
-    
+
     return LookupPermissionsNode(node_var_name, user_var_name)
