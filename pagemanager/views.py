@@ -6,7 +6,19 @@ from django.views.generic import DetailView
 from pagemanager import app_settings
 
 
-class PageView(DetailView):
+class TemplateFileMixin(object):
+    def template_file(self):
+        return self.get_object().page_layout._pagemanager_meta.template_file
+
+
+class PageContextDataMixin(object):
+    def get_context_data(self, **kwargs):
+        context = super(PageContextDataMixin, self).get_context_data(**kwargs)
+        context['fields'] = context['object'].page_layout
+        return context
+
+
+class PageView(PageContextDataMixin, DetailView, TemplateFileMixin):
     """
     View that displays a given page in the site.
     """
@@ -43,7 +55,7 @@ class PageView(DetailView):
         return response
 
 
-class HomepageView(DetailView):
+class HomepageView(PageContextDataMixin, DetailView, TemplateFileMixin):
     """
     View that displays the single page denoted as being the homepage.
     """
