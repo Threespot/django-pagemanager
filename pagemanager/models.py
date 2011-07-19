@@ -85,8 +85,11 @@ class Page(MPTTModel):
                 old_homepage.save()
         return super(Page, self).clean()
 
+    @models.permalink
     def get_absolute_url(self):
-        return '/' + self.path_prefix
+        return ('pagemanager_page', (), {
+            'path': '%s/%s' % (self.path_prefix, self.slug,)
+        })
 
     def get_add_url(self):
         return reverse('admin:%s_%s_add' % (
