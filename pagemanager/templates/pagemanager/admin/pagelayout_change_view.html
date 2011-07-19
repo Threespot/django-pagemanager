@@ -10,11 +10,11 @@
         (function($){
             $(function(){
                 $('.publish, .attributes').css('top', -1 * $('.main').outerHeight(true));
-
-                var movePageFields = $('.publish').outerHeight(true) + $('.attributes').outerHeight(true);
-                movePageFields = movePageFields - $('.main').outerHeight();
-                $('.page-fields').css('top', -1 * movePageFields);
-                $('.page-fields').css('margin-bottom', -1 * movePageFields);
+                var movePageFields = -1 * ($('.page').outerHeight() - $('.main').outerHeight());
+                $('.page-fields').css({
+                    'top': movePageFields,
+                    'margin-bottom': movePageFields
+                });
             });
         })(django.jQuery);
         {% for page in original.page.all %}
@@ -81,7 +81,7 @@
                     {%else%}
                 <li><a href="../../../r/{{ content_type_id }}/{{ object_id }}/" class="viewsitelink">{% trans "Preview on site" %}</a></li>
                     {%endif%}
-                {% endif%}        
+                {% endif%}
             </ul>{% endwith %}
             {% endif %}{% endif %}
         {% endblock %}
@@ -109,6 +109,7 @@
                                 {% include inline_admin_formset.opts.template %}
                             {% endif %}
                         {% endfor %}
+                        <br class="clear" />
                     </div>
 
                     <div class="page-fields main">

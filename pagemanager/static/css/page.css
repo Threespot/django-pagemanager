@@ -91,6 +91,11 @@ form .layout.aligned li{
         display: none;
     }
 
+.description textarea{
+    width: 290px !important;
+    height: 100px;
+}
+
 .dynamic-faqitem_set{
     border-bottom: 1px solid #CCC;
 }
