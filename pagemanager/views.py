@@ -6,29 +6,37 @@ from django.views.generic import DetailView
 from pagemanager import app_settings
 
 
-class TemplateFileMixin(object):
+class PageManagerViewMixin(object):
+    """
+    Mixin that provides base functionality for all views used with pagemanager
+    """
+    context_object_name = 'page'
+    content_object = None
+    model = app_settings.PAGEMANAGER_PAGE_MODEL
+
+    def get_template_names(self):
+        return [self.get_object().page_layout.pagemanager_meta().template_file]
+
     def template_file(self):
-        return self.get_object().page_layout._pagemanager_meta.template_file
+        return self.get_object().page_layout.pagemanager_meta().template_file
 
-
-class PageContextDataMixin(object):
     def get_context_data(self, **kwargs):
-        context = super(PageContextDataMixin, self).get_context_data(**kwargs)
+        context = super(PageManagerViewMixin, self).get_context_data(**kwargs)
         context['fields'] = context['object'].page_layout
         return context
 
+    def dispatch(self, request, *args, **kwargs):
+        response = super(PageManagerViewMixin, self).dispatch(request, *args, \
+            **kwargs)
+        return response
 
-class PageView(PageContextDataMixin, DetailView, TemplateFileMixin):
+
+class PageView(PageManagerViewMixin, DetailView):
     """
     View that displays a given page in the site.
     """
     context_object_name = 'page'
     model = app_settings.PAGEMANAGER_PAGE_MODEL
-
-    def get_template_names(self):
-        if self.template_name:
-            return self.template_name
-        return [app_settings.PAGEMANAGER_DEFAULT_TEMPLATE]
 
     @staticmethod
     def zero_is_none(n):
@@ -37,6 +45,8 @@ class PageView(PageContextDataMixin, DetailView, TemplateFileMixin):
         return None
 
     def get_object(self, queryset=None):
+        if self.content_object:
+            return self.content_object
         count = 1
         queryset = self.model.objects.all()
         split = self.kwargs['path'].split('/')
@@ -46,7 +56,8 @@ class PageView(PageContextDataMixin, DetailView, TemplateFileMixin):
             if not len(queryset):
                 raise Http404
             elif len(queryset) == 1:
-                return queryset[0]
+                self.content_object = queryset[0]
+                return self.content_object
 
     def dispatch(self, request, *args, **kwargs):
         response = super(PageView, self).dispatch(request, *args, **kwargs)
@@ -55,20 +66,15 @@ class PageView(PageContextDataMixin, DetailView, TemplateFileMixin):
         return response
 
 
-class HomepageView(PageContextDataMixin, DetailView, TemplateFileMixin):
+class HomepageView(PageManagerViewMixin, DetailView):
     """
     View that displays the single page denoted as being the homepage.
     """
-    context_object_name = 'page'
-    model = app_settings.PAGEMANAGER_PAGE_MODEL
-
-    def get_template_names(self):
-        if self.template_name:
-            return self.template_name
-        return [app_settings.PAGEMANAGER_DEFAULT_TEMPLATE]
-
     def get_object(self):
+        if self.content_object:
+            return self.content_object
         try:
-            return self.model.objects.get(is_homepage=True)
+            self.content_object = self.model.objects.get(is_homepage=True)
+            return self.content_object
         except:
             raise Http404
