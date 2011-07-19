@@ -223,6 +223,7 @@ for page_layout in pagemanager_site._registry:
     )
     if pm_meta.formfield_overrides:
         layoutadmin_cls.formfield_overrides.update(pm_meta.formfield_overrides)
+    import pdb; pdb.set_trace()
     if pm_meta.fieldsets:
         layoutadmin_cls.fieldsets = pm_meta.fieldsets
     if meta.verbose_name:
@@ -232,7 +233,7 @@ for page_layout in pagemanager_site._registry:
     if pm_meta.inlines:
         layoutadmin_cls.inlines = PageLayoutAdmin.inlines + pm_meta.inlines
     if pm_meta.readonly_fields:
-        PageLayoutAdmin.readonly_fields = pm_meta.readonly_fields
+        layoutadmin_cls.readonly_fields = pm_meta.readonly_fields
     if pm_meta.exclude:
         layoutadmin_cls.exclude = PageLayoutAdmin.exclude + pm_meta.exclude
-    admin.site.register(page_layout, PageLayoutAdmin)
+    admin.site.register(page_layout, layoutadmin_cls)
