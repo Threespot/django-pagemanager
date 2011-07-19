@@ -98,23 +98,32 @@ class Page(MPTTModel):
         )) + '?parent=%s' % self.parent.pk
 
     def get_edit_url(self):
-        return reverse('admin:%s_%s_change' % (
-            self.page_layout._meta.app_label,
-            self.page_layout._meta.module_name,
-        ), args=[self.page_layout.pk])
+        try:
+            return reverse('admin:%s_%s_change' % (
+                self.page_layout._meta.app_label,
+                self.page_layout._meta.module_name,
+            ), args=[self.page_layout.pk])
+        except AttributeError:
+            return ''
 
     def get_add_child_url(self):
-        rev = reverse('admin:%s_%s_add' % (
-            self._meta.app_label,
-            self._meta.module_name,
-        ))
-        return '%s?parent=%s' % (rev, self.pk,)
+        try:
+            rev = reverse('admin:%s_%s_add' % (
+                self._meta.app_label,
+                self._meta.module_name,
+            ))
+            return '%s?parent=%s' % (rev, self.pk,)
+        except AttributeError:
+            return ''
 
     def get_delete_url(self):
-        return reverse('admin:%s_%s_delete' % (
-            self.page_layout._meta.app_label,
-            self.page_layout._meta.module_name,
-        ), args=[self.page_layout.pk])
+        try:
+            return reverse('admin:%s_%s_delete' % (
+                self.page_layout._meta.app_label,
+                self.page_layout._meta.module_name,
+            ), args=[self.page_layout.pk])
+        except AttributeError:
+            return ''
 
     @property
     def path_prefix(self):
