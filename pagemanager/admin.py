@@ -51,7 +51,7 @@ class PageInline(generic.GenericStackedInline):
         self.form = ComposedFormClass
 
 
-class PageLayoutAdmin(VersionAdmin):
+class PageLayoutAdmin(admin.ModelAdmin):
     """
     Common admin for PageLayout subclasses.
     """
@@ -235,4 +235,5 @@ for page_layout in pagemanager_site._registry:
         layoutadmin_cls.readonly_fields = pm_meta.readonly_fields
     if pm_meta.exclude:
         layoutadmin_cls.exclude = PageLayoutAdmin.exclude + pm_meta.exclude
+
     admin.site.register(page_layout, layoutadmin_cls)
