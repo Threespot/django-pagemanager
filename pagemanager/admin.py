@@ -16,7 +16,7 @@ from pagemanager import PageAdmin
 from pagemanager.app_settings import PAGEMANAGER_PAGE_MODEL, \
     PAGEMANAGER_PAGE_MODELADMIN
 from pagemanager.forms import PageAdminFormMixin
-from pagemanager.models import Page, PlaceholderPage
+from pagemanager.models import Page, PlaceholderPage, RedirectPage
 from pagemanager.sites import pagemanager_site
 from pagemanager.permissions import get_permissions, get_lookup_function
 
@@ -25,7 +25,7 @@ from pagemanager.permissions import get_permissions, get_lookup_function
 admin.site.register(PAGEMANAGER_PAGE_MODEL, PAGEMANAGER_PAGE_MODELADMIN)
 
 # Register stock pagemanager layouts
-pagemanager_site.register([PlaceholderPage])
+pagemanager_site.register([PlaceholderPage, RedirectPage])
 
 
 class PageInline(generic.GenericStackedInline):

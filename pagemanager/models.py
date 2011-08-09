@@ -304,3 +304,16 @@ class PlaceholderPage(PageLayout):
 
     class PageManagerMeta:
         name = 'Placeholder Page'
+
+class RedirectPage(PageLayout):
+    """
+    A page that lives in the tree, but redirects to another URL when accessed.
+    """
+    url = models.URLField(verify_exists=False)
+
+    class Meta:
+        verbose_name = 'Redirect'
+        verbose_name_plural = 'Redirects'
+
+    class PageManagerMeta:
+        name = 'Redirect Page'

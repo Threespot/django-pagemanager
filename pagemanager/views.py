@@ -1,9 +1,10 @@
 from django.core.urlresolvers import reverse
-from django.http import Http404
+from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import DetailView
 
 from pagemanager import app_settings
+from pagemanager.models import RedirectPage
 
 
 class PageManagerViewMixin(object):
@@ -28,6 +29,8 @@ class PageManagerViewMixin(object):
     def dispatch(self, request, *args, **kwargs):
         response = super(PageManagerViewMixin, self).dispatch(request, *args, \
             **kwargs)
+        if issubclass(self.object.page_layout.__class__, RedirectPage):
+            return HttpResponseRedirect(self.object.page_layout.url)
         return response
 
 
