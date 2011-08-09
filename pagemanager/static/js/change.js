@@ -45,7 +45,7 @@
                                 });
                             };
                         $group.addClass('sorting');
-                        //self.ckSetCache();
+			$group.find('h2 a').text('Finish Sort');
                         $group.find('.inline-related').each(function(index, element){
                             makeSummary(element).appendTo(element);
                         });
@@ -53,25 +53,11 @@
                     },
                     'stopSortable': function($group){
                         var self = app.orderInlines;
-                        // self.ckUpdateFromCache();
                         $group.find('.summary').remove();
+			$group.find('h2 a').text('Sort');
                         $group.removeClass('sorting');
                         $group.sortable('disable');
                     },
-                    // 'ckSetCache': function(){
-                    //     $.each(CKEDITOR.instances, function(){
-                    //         this.updateElement();
-                    //         $(this.element).data('ck', this.getData());
-                    //     });
-                    // },
-                    // 'ckUpdateFromCache': function(){
-                    //     $.each(CKEDITOR.instances, function(){
-                    //         var val = $(this.element).data('ck');
-                    //         if(this.getData() != val){
-                    //             this.setData(val);
-                    //         }
-                    //     });
-                    // },
                     'toggleSortable': function(evt){
                         evt.preventDefault();
                         var self = app.orderInlines,

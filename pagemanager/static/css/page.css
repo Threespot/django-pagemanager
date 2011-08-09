@@ -98,7 +98,8 @@ form .layout.aligned li{
 .dynamic-faqitem_set textarea{
     width: 591px !important;
 }
-.sorting .form-row{
+.sorting .form-row,
+.sorting h3{
     display: none;
 }
 .sorting .dynamic-faqitem_set{
@@ -161,7 +162,9 @@ form .layout.aligned li{
     .ui-sortable-helper .summary{
         border-top: 1px solid #DEDEDE;
     }
-
+.inline-group h2 a{
+	float: right;
+}
 .cke_skin_kama a.cke_toolbox_collapser,
 .cke_skin_kama a:hover.cke_toolbox_collapser,
 .cke_skin_kama .cke_resizer{
