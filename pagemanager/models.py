@@ -203,6 +203,7 @@ class PageLayoutMeta(object):
     exclude = None
     formfield_overrides = None
     readonly_fields = None
+    admin_mixin_dict = None
 
     def __init__(self, opts, **kwargs):
         if opts:

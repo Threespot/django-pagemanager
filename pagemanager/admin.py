@@ -216,10 +216,14 @@ for page_layout in pagemanager_site._registry:
     # particular layout. The reason we do this is that we don't want
     # to pollute PageLayoutAdmin with layout-sepcific settings. Otherwise
     # settings from one layout might bleed through to the next.
+    class_body_dict = dict(PageLayoutAdmin.__dict__)
+    if pm_meta.admin_mixin_dict:
+        class_body_dict.update(pm_meta.admin_mixin_dict)
+    
     layoutadmin_cls = type(
         PageLayoutAdmin.__name__,
         (PageLayoutAdmin,),
-        dict(PageLayoutAdmin.__dict__)
+        class_body_dict
     )
     if pm_meta.formfield_overrides:
         layoutadmin_cls.formfield_overrides.update(pm_meta.formfield_overrides)
