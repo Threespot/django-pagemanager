@@ -9,6 +9,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
 from django.db import transaction, router
+from django.db.models.fields.related import RelatedField, ManyToManyField
 from django.http import HttpResponseRedirect, HttpResponseBadRequest,\
     HttpResponse, Http404
 from django.shortcuts import render_to_response
@@ -67,34 +68,52 @@ class PageAdmin(admin.ModelAdmin):
     merge_form_template = "pagemanager/admin/merge_confirmation.html"
     prepopulated_fields = {'slug': ('title',)}
 
-    def _copy_page(self, item):
+    def _copy_page(self, page):
         """ Create a draft copy of a published item to edit."""
-        if not item.is_published:
+        if not page.is_published:
             return None
-        new_item = deepcopy(item)
-        new_item.id = None
-        new_item.status = get_unpublished_status_name()
-        new_item.copy_of = item
-        new_item.title += _(" (draft copy)")
-        new_item.slug += "-draft-copy"
-        # Position the new item as the next neighbor of
-        # the original
-        new_item.insert_at(item, position='right')
-        new_item.save()
-        for obj in introspect.get_referencing_objects(new_item):
-            if not obj.__class__ is new_item.__class__:
-                copy_method = self._get_copy_method_name(obj)
-                obj_copy = getattr(self, copy_method, self._copy_object)(obj)
-                for data in introspect.get_referencing_models(
-                    new_item.__class__
-                ):
-                    if data['model'] is obj_copy.__class__:
-                        for m2m_field_name in data['m2m_field_names']:
-                            getattr(obj_copy, m2m_field_name).add(new_item)
-                        for field_name in data['field_names']:
-                            setattr(obj_copy, field_name, new_item)
-                obj_copy.save()
-        return new_item
+        original_pk = page.pk
+        original_layout_pk = page.page_layout.pk
+        page.pk = None
+        new_page = page
+        original_page = Page.objects.get(pk=original_pk)
+        # Position the new item as the next neighbor of the original
+        new_page.insert_at(original_page, position='right')
+        new_page.status = get_unpublished_status_name()
+        new_page.copy_of = original_page
+        new_page.title += _(" (draft copy)")
+        new_page.slug += "-draft-copy"
+        new_page.page_layout = None
+        new_page.save()
+        ignore = ['copy_of', 'layout_type']
+        fk_rels = [f.name for f in self.model._meta.fields \
+            if issubclass(f.__class__, RelatedField) and f.name not in ignore
+        ]
+        for field in fk_rels:
+            setattr(new_page, field, getattr(original_page, field))
+        m2m_rels = [f.name for f, x in self.model._meta.get_m2m_with_model()]
+        for field in m2m_rels:
+            setattr(new_page, field, getattr(original_page, field).all())
+        # Create a copy of the layout and attach to the new item.
+        new_layout = self._copy_object(original_page.page_layout)
+        original_layout = new_layout.__class__.objects.get(
+            pk=original_layout_pk
+        )
+        fk_rels = [f.name for f in original_layout._meta.fields \
+            if issubclass(f.__class__, RelatedField) and f.name not in ignore
+        ]
+        for field in fk_rels:
+            setattr(new_layout, field, getattr(original_layout, field, None))
+        m2m_rels = [f.name for f, x in \
+            original_layout._meta.get_m2m_with_model() if f.name != 'page'
+        ]
+        for field in m2m_rels:
+            m2m_objects = getattr(original_layout, field).all()
+            getattr(new_layout, field, ).add(*m2m_objects)
+        new_layout.save()
+        new_page.page_layout = new_layout
+        new_page.save()
+        return new_page
 
     @staticmethod
     def _get_copy_method_name(obj):
@@ -433,7 +452,11 @@ class PageAdmin(admin.ModelAdmin):
         safe.
         """
         obj = self.get_object(request, unquote(object_id))
+        if not obj:
+            raise Http404("Page not found.")
         layout = obj.page_layout
+        if not layout:
+            raise Http404("No layout found for this page.")
         layout_class_meta = layout.__class__._meta
         return HttpResponseRedirect(reverse('admin:%s_%s_change' % (
             layout_class_meta.app_label,

@@ -89,11 +89,11 @@ class PageLayoutAdmin(admin.ModelAdmin):
         if len(obj_pages) == 1:
             page = obj_pages[0]
         else:
-            val = obj_pages and "Zero" or "Multiple"
+            val = obj_pages and "Multiple" or "Zero"
             raise ValueError((
                 "%s pages relate to this layout. Only one page can "
                 "relate to this layout and at least one page must do so."
-            )) % val
+            )% val) 
 
         lookup_perm = get_lookup_function(request.user, get_permissions())
         # Reject users who don't have permission to view the page becuase
