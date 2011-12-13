@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import Permission, User
+from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.test import TestCase
@@ -23,6 +24,14 @@ class TestHomepageLayout(PageLayout):
         template_name = 'pagemanager/homepage.html'
         context = {'foo': 'bar'}
         components = ['blog', 'news']
+
+
+class Foo(models.Model):
+    bar = models.TextField()
+
+
+class FooLayout(PageLayout):
+    foos = models.ManyToManyField(Foo)
 
 
 class TestListingPageLayout(PageLayout):
@@ -99,14 +108,6 @@ class PageLayoutModelTest(unittest.TestCase):
         self.assertTrue(self.test_layout_instance_get.get_context_data() == \
             {'foo': 'listing'})
 
-    def _test_get_components(self):
-        # FIXME: What was this supposed to do?
-        self.assertTrue(self.page_layout_instance.get_components() == None)
-        self.assertTrue(self.test_layout_instance.get_components() == \
-            ['blog', 'news'])
-        self.assertTrue(self.test_layout_instance_get.get_components() == \
-            ['listing'])
-
 
 class RegistrationTest(unittest.TestCase):
     
@@ -128,15 +129,6 @@ class RegistrationTest(unittest.TestCase):
         self.site.register(self.test_layout)
         self.site.unregister(self.test_layout)
         self.assertFalse(self.test_layout in self.site._registry)
-
-    def _test_prevent_reregistration(self):
-        # FIXME: This has been removed. Check that that's OK.
-        self.site.register(self.test_layout)
-        self.assertRaises(
-            pagemanager.sites.AlreadyRegistered,
-            self.site.register,
-            self.test_layout
-        )
 
     def test_prevent_wrong_subclass_registration(self):
         """ 
@@ -172,6 +164,7 @@ class RegistrationTest(unittest.TestCase):
             self.test_layout
         )
 
+
 class TestPageBehaviors(TestCase):
     
     fixtures = ['pagemanager_test_data.json']
@@ -181,7 +174,23 @@ class TestPageBehaviors(TestCase):
         from pagemanager.sites import pagemanager_site
         self.site = pagemanager_site
         self.site.register(TestHomepageLayout)
-    
+
+    def fix_generic_rels(self):
+        """
+        Becuase fixture data relies on the state of the content types DB
+        to make generic relations work, and becuase the content types DB
+        contents are unknown at runtime, this function makes sure all
+        ``Page`` objects have the correct generic relation to instances of
+        the ``TestHomepageLayout`` created by the fixture.
+        """
+        layout_type = ContentType.objects.get(
+            app_label="pagemanager",
+            model="testhomepagelayout"
+        )
+        for page in Page.objects.all():
+            page.layout_type = layout_type
+            page.save()
+
     def test_page_status_and_visibility_behavior(self):
         """
         Tests that methods and attributes having to do with publishing
@@ -227,6 +236,7 @@ class TestPageBehaviors(TestCase):
         ):
             permission = Permission.objects.get(codename=codename)
             test_user.user_permissions.add(permission)
+        self.fix_generic_rels()
         root_page = Page.objects.get(pk=1)
         self.client.login(
             username=test_user_props['name'], 
@@ -236,6 +246,7 @@ class TestPageBehaviors(TestCase):
             args=[root_page.pk]
         )
         # User should not be able to view unpublished page.
+        
         response = self.client.get(change_page_url)
         self.assertEqual(response.status_code, 403)
         root_page.publish()
@@ -303,3 +314,47 @@ class TestPageBehaviors(TestCase):
         test_user.user_permissions.add(permission)
         response = self.client.post(change_page_url, data)
         self.assertRedirects(response, reverse("admin:index"))
+
+    def test_m2m_preservation_in_copying_and_merging(self):
+        root_page = Page.objects.get(pk=1)
+        foo_layout = FooLayout()
+        foo_layout.save()
+        for n in range(1, 3):
+            foo = Foo(bar="%d" % n)
+            foo.save()
+            foo_layout.foos.add(foo)
+        root_page.page_layout = foo_layout
+        root_page.save()
+        # Create a new staff user.
+        test_user_props = {
+            'name': 'test_user',
+            'email': 'test@example.com',
+            'password': 'testpassword'
+        }
+        test_user = User.objects.create_user(
+            test_user_props['name'],
+            test_user_props['email'],
+            test_user_props['password']
+        )
+        test_user.is_superuser = True
+        test_user.is_staff = True
+        test_user.save()    
+        log = self.client.login(
+            username=test_user_props['name'], 
+            password=test_user_props['password']
+        )
+        copy_url = reverse("admin:draft_copy", args=(foo_layout.pk,))
+        response = self.client.get(copy_url)
+        self.assertEqual(response.context['object'], root_page)
+        self.assertTrue(not root_page.get_draft_copy())
+        response = self.client.post(copy_url, {'post': 'yes'})
+        draft_copy = root_page.get_draft_copy()
+        self.assertTrue(isinstance(draft_copy, Page))
+        self.assertEqual(draft_copy.page_layout.foos.count(), 2)
+        self.assertEqual(draft_copy.page_layout.foos.all()[0].bar, '1')
+        self.assertEqual(draft_copy.page_layout.foos.all()[1].bar, '2')
+        merge_url = reverse("admin:draft_merge", args=(draft_copy.pk,))
+        response = self.client.get(merge_url)
+        self.assertEqual(response.context['object'], draft_copy)
+        response = self.client.post(merge_url, {'post': 'yes'})
+        self.assertTrue(not Page.objects.draft_copies())
