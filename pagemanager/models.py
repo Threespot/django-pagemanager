@@ -1,8 +1,10 @@
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
+from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.template.defaultfilters import slugify
+from django.utils.translation import ugettext as _
 
 from mptt.fields import TreeForeignKey
 from mptt.models import MPTTModel
@@ -266,6 +268,40 @@ class PageLayout(models.Model):
         validation of layouts on creation.
         """
         pass
+
+    @classmethod
+    def max_num(cls, max_num):
+        """
+        A validation shortcut to restrict the number of pages of a specific
+        PageLayout class that can exist.
+        """
+        existing = len(cls.objects.all())
+        if existing >= max_num:
+            if max_num == 1:
+                plural = ''
+            else:
+                plural = 's'
+            raise ValidationError(_(
+                'Only %s page%s using the %s layout can exist.'
+            ) % (max_num, plural, cls._pagemanager_meta.name,))
+
+    @classmethod
+    def require_parent(cls, parent_cls, required_parent_cls):
+        """
+        A validation shortcut to force a new page to be the child of a page
+        with a specific PageLayout class.
+        """
+        if parent_cls != required_parent_cls:
+            if required_parent_cls:
+                raise ValidationError(_(
+                    'A %s must be the child of a %s.'
+                ) % (
+                    cls._pagemanager_meta.name,
+                    required_parent_cls._pagemanager_meta.name,
+                ))
+            else:
+                raise ValidationError(_('A %s must not have a parent.') % \
+                    cls._pagemanager_meta.name)
 
     def get_thumbnail(self, instance=None):
         """
