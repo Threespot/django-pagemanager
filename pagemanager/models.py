@@ -329,6 +329,13 @@ class PageLayout(models.Model):
             return self._pagemanager_meta.context
         return None
 
+    def get_redirect_url(self):
+        """
+        If returned value is not None, PageManagerViewMixin will return an
+        HttpResponseRedirect to the URL of the returned value.
+        """
+        return None
+
     @property
     def html_id(self):
         """
@@ -350,6 +357,7 @@ class PlaceholderPage(PageLayout):
     class PageManagerMeta:
         name = 'Placeholder Page'
 
+
 class RedirectPage(PageLayout):
     """
     A page that lives in the tree, but redirects to another URL when accessed.
@@ -362,3 +370,6 @@ class RedirectPage(PageLayout):
 
     class PageManagerMeta:
         name = 'Redirect Page'
+
+    def get_redirect_url(self):
+        return self.url
