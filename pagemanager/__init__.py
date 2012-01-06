@@ -6,7 +6,7 @@ from django.contrib import admin
 from django.contrib.admin.options import csrf_protect_m
 from django.contrib.admin.util import get_deleted_objects, unquote
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import PermissionDenied, ValidationError
+from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
 from django.db import transaction, router
 from django.db.models.fields.related import RelatedField, ManyToManyField
@@ -65,14 +65,12 @@ class PageAdminForm(ModelForm):
         Unfortunately, this validation only occurs in the admin; it is not
         performed when creating Page objects otherwise.
         """
-
         layout_cls = pagemanager_site.get_by_name(self.data['layout'])
         try:
-            parent_cls = Page.objects.get(self.cleaned_data['parent'])
-        except Page.DoesNotExist:
+            parent_cls = self.cleaned_data['parent'].page_layout.__class__
+        except AttributeError:
             parent_cls = None
         layout_cls.validate_layout(parent_cls)
-
         return self.cleaned_data
 
 
