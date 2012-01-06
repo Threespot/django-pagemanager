@@ -10,6 +10,7 @@ from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
 from django.db import transaction, router
 from django.db.models.fields.related import RelatedField, ManyToManyField
+from django.forms import ModelForm
 from django.http import HttpResponseRedirect, HttpResponseBadRequest,\
     HttpResponse, Http404
 from django.shortcuts import render_to_response
@@ -50,8 +51,31 @@ def autodiscover():
                 raise
 
 
-class PageAdmin(admin.ModelAdmin):
+class PageAdminForm(ModelForm):
 
+    def clean(self):
+        """
+        Perform additional validation of rules regarding the PageLayout's
+        existence, rather than those validating the PageLayout's data (which
+        can be handled in PageLayoutAdmin.full_clean).
+
+        This is done by calling the validate_layout classmethod on the class
+        of the proposed layout, passing it the class of the parent's layout.
+
+        Unfortunately, this validation only occurs in the admin; it is not
+        performed when creating Page objects otherwise.
+        """
+        layout_cls = pagemanager_site.get_by_name(self.data['layout'])
+        try:
+            parent_cls = self.cleaned_data['parent'].page_layout.__class__
+        except AttributeError:
+            parent_cls = None
+        layout_cls.validate_layout(parent_cls)
+        return self.cleaned_data
+
+
+class PageAdmin(admin.ModelAdmin):
+    form = PageAdminForm
     fieldsets = (
         ('Basics', {
             'fields': ('title', 'slug',)
