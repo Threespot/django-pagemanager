@@ -1,16 +1,16 @@
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
-from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.template.defaultfilters import slugify
 
 from mptt.fields import TreeForeignKey
-from mptt.models import MPTTModel, MPTTModelBase
+from mptt.models import MPTTModel
 
 from pagemanager.permissions import get_published_status_name, \
     get_public_visibility_name
 from pagemanager.managers import PageManager
+
 
 class Page(MPTTModel):
     """
@@ -258,6 +258,14 @@ class PageLayout(models.Model):
     @classmethod
     def hide_from_applist(cls):
         return True
+
+    @classmethod
+    def validate_layout(cls, parent_cls):
+        """
+        This overridable method provides a hook for subclasses to perform
+        validation of layouts on creation.
+        """
+        pass
 
     def get_thumbnail(self, instance=None):
         """
