@@ -28,6 +28,7 @@ from pagemanager.permissions import get_permissions, get_lookup_function, \
     get_unpublished_status_name
 from pagemanager.sites import pagemanager_site
 
+DRAFT_POSTFIX = _(" (draft copy)")
 
 def autodiscover():
     """
@@ -105,7 +106,7 @@ class PageAdmin(admin.ModelAdmin):
         new_page.insert_at(original_page, position='right')
         new_page.status = get_unpublished_status_name()
         new_page.copy_of = original_page
-        new_page.title += _(" (draft copy)")
+        new_page.title += DRAFT_POSTFIX
         new_page.slug += "-draft-copy"
         new_page.page_layout = None
         new_page.save()
@@ -173,6 +174,8 @@ class PageAdmin(admin.ModelAdmin):
         copy.save()
         original.delete()
         copy.slug = original.slug
+        if copy.title.endswith(DRAFT_POSTFIX):
+            copy.title = copy.title[:-1 * len(DRAFT_POSTFIX)]
         copy.publish()
         return copy
 
