@@ -83,14 +83,18 @@ class Page(MPTTModel):
             except Page.DoesNotExist:
                 pass
             else:
-                old_homepage.is_homepage = False
-                old_homepage.save()
+                if old_homepage != self:
+                    old_homepage.is_homepage = False
+                    old_homepage.save()
         return super(Page, self).clean()
 
     @models.permalink
     def get_absolute_url(self):
+        path = '%s/%s' % (self.path_prefix, self.slug,)
+        if path.startswith('/'):
+            path = path[1:]
         return ('pagemanager_page', (), {
-            'path': '%s/%s' % (self.path_prefix, self.slug,)
+            'path': path
         })
 
     def get_add_url(self):
@@ -129,7 +133,8 @@ class Page(MPTTModel):
 
     @property
     def path_prefix(self):
-        return '/'.join([ancestor.slug for ancestor in self.get_ancestors()])
+        return '/'.join([ancestor.slug for ancestor in \
+            self.get_ancestors()])
 
     def is_visible(self):
         return self.visibility == get_public_visibility_name()
