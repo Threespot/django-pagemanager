@@ -204,6 +204,8 @@ class PageLayoutMeta(object):
     formfield_overrides = None
     readonly_fields = None
     admin_mixin_dict = None
+    admin_media_js = None
+    admin_media_css = None
 
     def __init__(self, opts, **kwargs):
         if opts:
