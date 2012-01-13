@@ -1,16 +1,18 @@
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
-from django.core.exceptions import ImproperlyConfigured
+from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.template.defaultfilters import slugify
+from django.utils.translation import ugettext as _
 
 from mptt.fields import TreeForeignKey
-from mptt.models import MPTTModel, MPTTModelBase
+from mptt.models import MPTTModel
 
 from pagemanager.permissions import get_published_status_name, \
     get_public_visibility_name
 from pagemanager.managers import PageManager
+
 
 class Page(MPTTModel):
     """
@@ -81,14 +83,18 @@ class Page(MPTTModel):
             except Page.DoesNotExist:
                 pass
             else:
-                old_homepage.is_homepage = False
-                old_homepage.save()
+                if old_homepage != self:
+                    old_homepage.is_homepage = False
+                    old_homepage.save()
         return super(Page, self).clean()
 
     @models.permalink
     def get_absolute_url(self):
+        path = '%s/%s' % (self.path_prefix, self.slug,)
+        if path.startswith('/'):
+            path = path[1:]
         return ('pagemanager_page', (), {
-            'path': '%s/%s' % (self.path_prefix, self.slug,)
+            'path': path
         })
 
     def get_add_url(self):
@@ -127,7 +133,8 @@ class Page(MPTTModel):
 
     @property
     def path_prefix(self):
-        return '/'.join([ancestor.slug for ancestor in self.get_ancestors()])
+        return '/'.join([ancestor.slug for ancestor in \
+            self.get_ancestors()])
 
     def is_visible(self):
         return self.visibility == get_public_visibility_name()
@@ -261,6 +268,48 @@ class PageLayout(models.Model):
     def hide_from_applist(cls):
         return True
 
+    @classmethod
+    def validate_layout(cls, parent_cls):
+        """
+        This overridable method provides a hook for subclasses to perform
+        validation of layouts on creation.
+        """
+        pass
+
+    @classmethod
+    def max_num(cls, max_num):
+        """
+        A validation shortcut to restrict the number of pages of a specific
+        PageLayout class that can exist.
+        """
+        existing = len(cls.objects.all())
+        if existing >= max_num:
+            if max_num == 1:
+                plural = ''
+            else:
+                plural = 's'
+            raise ValidationError(_(
+                'Only %s page%s using the %s layout can exist.'
+            ) % (max_num, plural, cls._pagemanager_meta.name,))
+
+    @classmethod
+    def require_parent(cls, parent_cls, required_parent_cls):
+        """
+        A validation shortcut to force a new page to be the child of a page
+        with a specific PageLayout class.
+        """
+        if parent_cls != required_parent_cls:
+            if required_parent_cls:
+                raise ValidationError(_(
+                    'A %s must be the child of a %s.'
+                ) % (
+                    cls._pagemanager_meta.name,
+                    required_parent_cls._pagemanager_meta.name,
+                ))
+            else:
+                raise ValidationError(_('A %s must not have a parent.') % \
+                    cls._pagemanager_meta.name)
+
     def get_thumbnail(self, instance=None):
         """
         If it's necessary to define the PageLayout's thumbnail dynamically, it
@@ -287,6 +336,13 @@ class PageLayout(models.Model):
             return self._pagemanager_meta.context
         return None
 
+    def get_redirect_url(self):
+        """
+        If returned value is not None, PageManagerViewMixin will return an
+        HttpResponseRedirect to the URL of the returned value.
+        """
+        return None
+
     @property
     def html_id(self):
         """
@@ -308,6 +364,7 @@ class PlaceholderPage(PageLayout):
     class PageManagerMeta:
         name = 'Placeholder Page'
 
+
 class RedirectPage(PageLayout):
     """
     A page that lives in the tree, but redirects to another URL when accessed.
@@ -320,3 +377,6 @@ class RedirectPage(PageLayout):
 
     class PageManagerMeta:
         name = 'Redirect Page'
+
+    def get_redirect_url(self):
+        return self.url

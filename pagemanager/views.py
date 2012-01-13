@@ -29,8 +29,11 @@ class PageManagerViewMixin(object):
     def dispatch(self, request, *args, **kwargs):
         response = super(PageManagerViewMixin, self).dispatch(request, *args, \
             **kwargs)
-        if issubclass(self.object.page_layout.__class__, RedirectPage):
-            return HttpResponseRedirect(self.object.page_layout.url)
+
+        redirect_url = self.object.page_layout.get_redirect_url()
+        if redirect_url:
+            return HttpResponseRedirect(redirect_url)
+
         return response
 
 
