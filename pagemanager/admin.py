@@ -7,6 +7,7 @@ from django.contrib.contenttypes import generic
 from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
 from django.db import models
+from django.forms.widgets import Media
 from django.http import HttpResponseRedirect
 from django.utils.encoding import force_unicode
 
@@ -219,12 +220,19 @@ for page_layout in pagemanager_site._registry:
     class_body_dict = dict(PageLayoutAdmin.__dict__)
     if pm_meta.admin_mixin_dict:
         class_body_dict.update(pm_meta.admin_mixin_dict)
-    
+    # Create a ``Media`` class for ``admin_media_js`` or ``admin_media_css``
+    # fields and attach to the Admin class.
+    if pm_meta.admin_media_js or pm_meta.admin_media_css:
+        css = pm_meta.admin_media_css or {}
+        js = pm_meta.admin_media_js or ()
+        class_body_dict['media'] = Media(css=css, js=js)
+    # Create an Admin class dynamically.
     layoutadmin_cls = type(
         PageLayoutAdmin.__name__,
         (PageLayoutAdmin,),
         class_body_dict
     )
+    
     if pm_meta.formfield_overrides:
         layoutadmin_cls.formfield_overrides.update(pm_meta.formfield_overrides)
     if pm_meta.fieldsets:
