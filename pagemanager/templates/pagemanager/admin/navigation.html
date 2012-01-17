@@ -1,0 +1,26 @@
+{% load pagemanager_admin_tags navigation_admin_tags %}
+{% load_menus %}
+
+<div class="module">
+    <table>
+        <caption>Menus</caption>
+        <tbody>
+            {% for menu in navigation_menus %}
+                <tr>
+                    <th scope="row">
+                        <a href="{{ menu.get_edit_url }}">{{ menu.name }}</a>
+                    </th>
+                    <td>
+                        <a class="changelink" href="{{ menu.get_edit_url }}">Change</a>
+                    </td>
+                    <td>
+                        <a class="deletelink" href="{{ menu.get_delete_url }}">Delete</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="add-row clearfix">
+        <a href="{{ navigation_menu_model.get_add_url }}">Add</a>
+    </div>
+</div>

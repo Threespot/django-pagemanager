@@ -1,5 +1,5 @@
 {% extends "admin/base_site.html" %}
-{% load i18n pagemanager_admin_tags navigation_admin_tags mptt_tags %}
+{% load i18n pagemanager_admin_tags mptt_tags %}
 
 {% block extrahead %}
     {% load_pages %}
@@ -198,36 +198,14 @@
 {% endblock %}
 
 {% block sidebar %}
-{% load_menus %}
 {% pagemanager_app_list %}
 {% if app_list %}
     <div id="apps">
         <ul class="object-tools">
             <li><a href="{% url admin:pagemanager_page_add %}">Add New Page</a></li>
         </ul>
-        <div class="module">
-            <table>
-                <caption>Menus</caption>
-                <tbody>
-                    {% for menu in navigation_menus %}
-                        <tr>
-                            <th scope="row">
-                                <a href="{{ menu.get_edit_url }}">{{ menu.name }}</a>
-                            </th>
-                            <td>
-                                <a class="changelink" href="{{ menu.get_edit_url }}">Change</a>
-                            </td>
-                            <td>
-                                <a class="deletelink" href="{{ menu.get_delete_url }}">Delete</a>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            <div class="add-row clearfix">
-                <a href="{{ navigation_menu_model.get_add_url }}">Add</a>
-            </div>
-        </div>
+
+        {% render_navigation_list %}
 
     {% for app in app_list %}
         <div class="module">

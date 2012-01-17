@@ -3,6 +3,7 @@ from django.contrib.admin.sites import AdminSite, site
 from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
+from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from django.utils.text import capfirst
 
@@ -11,6 +12,23 @@ from pagemanager.permissions import get_permissions, get_lookup_function
 from pagemanager.util import get_pagemanager_model
 
 register = template.Library()
+
+
+class NavListNode(template.Node):
+
+    def render(self, context):
+        if 'navigation' in settings.INSTALLED_APPS:
+            return render_to_string('pagemanager/admin/navigation.html')
+        else:
+            return ''
+
+
+@register.tag
+def render_navigation_list(parser, token):
+    """
+    In any admin change_view, adds the object being changed to the context
+    """
+    return NavListNode()
 
 
 class ObjNode(template.Node):
