@@ -9,6 +9,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
 from django.db import transaction, router
+from django.db.models.fields import AutoField
 from django.db.models.fields.related import RelatedField, ManyToManyField
 from django.forms import ModelForm
 from django.http import HttpResponseRedirect, HttpResponseBadRequest,\
@@ -169,14 +170,29 @@ class PageAdmin(admin.ModelAdmin):
 
     def _merge_item(self, original, copy):
         """ Delete original, clean up and publish copy."""
-        original_slug = original.slug
-        copy.copy_of = None
-        copy.save()
-        original.delete()
-        copy.slug = original.slug
+
+        import pdb; pdb.set_trace()
+
+        # Copy values from copy to original, excepting any AutoField instances
+        # and the slug field.
+        for field in copy._meta.fields:
+            if not issubclass(AutoField, field.__class__) and field.name != 'slug':
+                field_name = field.name
+                setattr(original, field_name, getattr(copy, field_name))
+
+        # Ensure that all children in both the original and the copy are made
+        # children of the original.
+        children = set(list(original.get_children()) + list(copy.get_children()))
+        for child in children:
+            child.parent = original
+
+        # Remove the postfix from the title, if it hasn't already been changed.
         if copy.title.endswith(DRAFT_POSTFIX):
             copy.title = copy.title[:-1 * len(DRAFT_POSTFIX)]
-        copy.publish()
+
+        copy.delete()
+        original.save()
+
         return copy
 
     def get_urls(self):
