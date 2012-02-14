@@ -61,6 +61,7 @@
             {% if change %}{% if not is_popup %}
             {% with page=original.page.all.0 %}
             <ul class="object-tools">
+                <li><a href="{{ page.get_absolute_url }}" title="{%trans "View on site."%}">{% trans "View On Site" %}</a></li>
                 <li><a href="history/" class="historylink">{% trans "History" %}</a></li>
                 {% if page.copy_of%}
                 <li><a href="{% url "admin:draft_merge" page.pk %}" title="{%trans "Merge this copy over top of the original."%}">{% trans "Merge copy" %}</a></li>
