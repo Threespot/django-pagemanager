@@ -171,12 +171,15 @@ class PageAdmin(admin.ModelAdmin):
     def _merge_item(self, original, copy):
         """ Delete original, clean up and publish copy."""
 
-        import pdb; pdb.set_trace()
+        # Remove the postfix from the title, if it hasn't already been changed.
+        if copy.title.endswith(DRAFT_POSTFIX):
+            copy.title = copy.title[:-1 * len(DRAFT_POSTFIX)]
 
         # Copy values from copy to original, excepting any AutoField instances
         # and the slug field.
         for field in copy._meta.fields:
-            if not issubclass(AutoField, field.__class__) and field.name != 'slug':
+            if not issubclass(AutoField, field.__class__) and field.name not \
+                in ['slug', 'status']:
                 field_name = field.name
                 setattr(original, field_name, getattr(copy, field_name))
 
@@ -185,10 +188,6 @@ class PageAdmin(admin.ModelAdmin):
         children = set(list(original.get_children()) + list(copy.get_children()))
         for child in children:
             child.parent = original
-
-        # Remove the postfix from the title, if it hasn't already been changed.
-        if copy.title.endswith(DRAFT_POSTFIX):
-            copy.title = copy.title[:-1 * len(DRAFT_POSTFIX)]
 
         copy.delete()
         original.save()
@@ -409,7 +408,7 @@ class PageAdmin(admin.ModelAdmin):
                 }
             )
             redirect_url = reverse("admin:pagemanager_page_change",
-                args=(obj.pk,)
+                args=(original.pk,)
             )
             return HttpResponseRedirect(redirect_url)
 
@@ -444,7 +443,10 @@ class PageAdmin(admin.ModelAdmin):
         of Page's add_view.
         """
         if add:
-            context.update({'page_layouts': pagemanager_site})
+            context.update({
+                'page_layouts': sorted(pagemanager_site._registry, \
+                    key=lambda x: x._pagemanager_meta.name)
+            })
         return super(PageAdmin, self).render_change_form(request, context, \
             add, change, form_url, obj)
 
