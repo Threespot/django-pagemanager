@@ -88,8 +88,8 @@ class AppListNode(template.Node):
                 app_label = __import__(to_import).__APP_NAME__
             except AttributeError:
                 app_label = model._meta.app_label.title()
-            app_url = model._meta.app_label
-            has_module_perms = user.has_module_perms(app_label)
+            app_url = model._meta.app_label.lower()
+            has_module_perms = user.has_module_perms(app_label.lower())
             hidden_model = hasattr(model, 'hide_from_applist') and \
                 model.hide_from_applist()
             if has_module_perms and not hidden_model:
