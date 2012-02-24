@@ -14,8 +14,8 @@
                         <li>
                             <input type="radio" name="layout" id="{{ layout.html_id }}" value="{{ meta.name }}" {% if request.POST.layout == meta.name  %} checked="checked"{% endif %}{% if not request.POST and forloop.first %} checked="checked"{% endif %} />
                             <label for="{{ layout.html_id }}">
-<!--                                 <img src="{{ STATIC_URL }}{{ meta.thumbnail }}" alt="{{ meta.name }}" />
- -->                                <p>{{ meta.name }}</p
+                                <img src="{{ STATIC_URL }}{{ meta.thumbnail }}" alt="{{ meta.name }}" />
+                                <p>{{ meta.name }}</p
                             </label>
                         </li>
                         {% endwith %}
