@@ -363,6 +363,7 @@ class PlaceholderPage(PageLayout):
 
     class PageManagerMeta:
         name = 'Placeholder'
+        thumbnail = 'images/layouts/placeholder.png'
 
 
 class RedirectPage(PageLayout):
@@ -377,6 +378,7 @@ class RedirectPage(PageLayout):
 
     class PageManagerMeta:
         name = 'Redirect'
+        thumbnail = 'images/layouts/redirect.png'
 
     def get_redirect_url(self):
         return self.url
