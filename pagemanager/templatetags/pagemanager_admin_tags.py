@@ -1,5 +1,5 @@
 from django import template
-from django.contrib.admin.sites import AdminSite, site
+from django.contrib.admin.sites import site
 from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
@@ -12,6 +12,17 @@ from pagemanager.permissions import get_permissions, get_lookup_function
 from pagemanager.util import get_pagemanager_model
 
 register = template.Library()
+
+
+# FIXME: This is hardly optimal. But the Sites framework is somehow
+# getting unregistered from the admin.
+from django.contrib.admin.sites import AlreadyRegistered
+from django.contrib.sites.models import Site
+from django.contrib.sites.admin import SiteAdmin
+try:
+    site.register(Site, SiteAdmin)
+except AlreadyRegistered:
+    pass
 
 
 class NavListNode(template.Node):
