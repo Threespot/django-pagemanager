@@ -14,17 +14,6 @@ from pagemanager.util import get_pagemanager_model
 register = template.Library()
 
 
-# FIXME: This is hardly optimal. But the Sites framework is somehow
-# getting unregistered from the admin.
-from django.contrib.admin.sites import AlreadyRegistered
-from django.contrib.sites.models import Site
-from django.contrib.sites.admin import SiteAdmin
-try:
-    site.register(Site, SiteAdmin)
-except AlreadyRegistered:
-    pass
-
-
 class NavListNode(template.Node):
 
     def render(self, context):
