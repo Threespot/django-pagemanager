@@ -1,5 +1,5 @@
 from django import template
-from django.contrib.admin.sites import AdminSite, site
+from django.contrib.admin.sites import site
 from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
