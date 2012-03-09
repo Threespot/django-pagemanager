@@ -31,11 +31,23 @@ class PageManagerViewMixin(object):
         response = super(PageManagerViewMixin, self).dispatch(request, *args, \
             **kwargs)
 
+        if not self.can_view_page(request):
+            raise Http404
+
         redirect_url = self.object.page_layout.get_redirect_url()
         if redirect_url:
             return HttpResponseRedirect(redirect_url)
 
         return response
+
+    def can_view_page(self, request):
+        if self.object.status == 'draft':
+            if not request.user.has_perm('pagemanager.view_draft_pages'):
+                return False
+        if self.object.visibility == 'private':
+            if not request.user.has_perm('pagemanager.view_private_pages'):
+                return False
+        return True
 
 
 class PageView(PageManagerViewMixin, DetailView):
