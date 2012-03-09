@@ -61,17 +61,18 @@ def get_page_from_path(path):
     >>> get_page_from_path("/i/am/a/path/")
     <Page: path>
     
-    If the path is incorrect, an ``Http404`` exception is raised.
+    If the path is incorrect, an ``Http404`` exception is raised. If two nodes 
+    with the same slug have the same parent, a 404 is also raised.
     
     """
     
     def _validate_path_with_page(page_model, parent_obj, child_slug):
         try:
             if not parent_obj:
-                return page_model.objects.root_nodes().get(slug=child_slug)
+                return page_model.objects.get(slug=child_slug, parent=None)
             else:
                 return parent_obj.get_children().get(slug=child_slug)
-        except page_model.DoesNotExist:
+        except (page_model.DoesNotExist, page_model.MultipleObjectsReturned):
             raise Http404("Page not found.")
     
     path_pieces = filter(bool, path.split("/"))
