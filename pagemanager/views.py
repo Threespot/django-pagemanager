@@ -5,6 +5,7 @@ from django.views.generic import DetailView
 
 from pagemanager import app_settings
 from pagemanager.models import RedirectPage
+from pagemanager.util import get_page_from_path
 
 
 class PageManagerViewMixin(object):
@@ -53,17 +54,7 @@ class PageView(PageManagerViewMixin, DetailView):
     def get_object(self, queryset=None):
         if self.content_object:
             return self.content_object
-        count = 1
-        queryset = self.model.objects.all()
-        split = self.kwargs['path'].split('/')
-        while count <= len(split):
-            newslug = split[count * -1:self.zero_is_none(count * -1 + 1)]
-            queryset = queryset.filter(slug=newslug[0])
-            if not len(queryset):
-                raise Http404
-            elif len(queryset) == 1:
-                self.content_object = queryset[0]
-                return self.content_object
+        return get_page_from_path(self.kwargs['path'])
 
     def dispatch(self, request, *args, **kwargs):
         response = super(PageView, self).dispatch(request, *args, **kwargs)

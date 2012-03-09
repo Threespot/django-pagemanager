@@ -1,5 +1,8 @@
+from functools import partial
+
 from django.core.exceptions import ImproperlyConfigured
 from django.conf import settings
+from django.http import Http404
 
 from pagemanager import PageAdmin
 from pagemanager.models import Page
@@ -33,7 +36,7 @@ def get_pagemanager_modeladmin():
             cls_name = imp_path.pop()
             imp_path = ".".join(imp_path)
             try:
-                module = import_module(imp_path)
+                import_module(imp_path)
             except ImportError:
                 pass
             else:
@@ -48,3 +51,29 @@ def get_pagemanager_modeladmin():
                     'pagemanager.admin.PageAdmin'
                 )
     return PageAdmin
+
+
+def get_page_from_path(path):
+    """
+    Returns the final page in a URL-type path, validating that it lives at the
+    specified placein the hierarchy as it goes. Example:
+    
+    >>> get_page_from_path("/i/am/a/path/")
+    <Page: path>
+    
+    If the path is incorrect, an ``Http404`` exception is raised.
+    
+    """
+    
+    def _validate_path_with_page(page_model, parent_obj, child_slug):
+        try:
+            if not parent_obj:
+                return page_model.objects.root_nodes().get(slug=child_slug)
+            else:
+                return parent_obj.get_children().get(slug=child_slug)
+        except page_model.DoesNotExist:
+            raise Http404("Page not found.")
+    
+    path_pieces = filter(bool, path.split("/"))
+    validate_path = partial(_validate_path_with_page, get_pagemanager_model())
+    return reduce(validate_path, path_pieces, '')
