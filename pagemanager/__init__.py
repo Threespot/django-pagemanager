@@ -190,6 +190,7 @@ class PageAdmin(admin.ModelAdmin):
             child.parent = original
 
         copy.delete()
+        original.copy_of = None
         original.save()
 
         return copy
