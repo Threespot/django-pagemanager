@@ -170,7 +170,7 @@ class PageAdmin(admin.ModelAdmin):
 
     def _merge_item(self, original, copy):
         """ Delete original, clean up and publish copy."""
-
+        children = set(list(original.children.all()) + list(copy.children.all()))
         # Remove the postfix from the title, if it hasn't already been changed.
         if copy.title.endswith(DRAFT_POSTFIX):
             copy.title = copy.title[:-1 * len(DRAFT_POSTFIX)]
@@ -183,15 +183,14 @@ class PageAdmin(admin.ModelAdmin):
                 field_name = field.name
                 setattr(original, field_name, getattr(copy, field_name))
 
-        # Ensure that all children in both the original and the copy are made
-        # children of the original.
-        children = set(list(original.get_children()) + list(copy.get_children()))
-        for child in children:
-            child.parent = original
-
         copy.delete()
         original.copy_of = None
         original.save()
+
+        # Ensure that all children in both the original and the copy are made
+        # children of the original.
+        for child in children:
+            child.move_to(original, position='last-child')
 
         return copy
 
@@ -373,10 +372,16 @@ class PageAdmin(admin.ModelAdmin):
         obj_url = reverse("admin:pagemanager_page_change", args=(obj.pk,))
         obj_name = unicode(obj)
         deleted_objects = filter(
-            lambda link: obj_url not in link and obj_url not in link,
+            lambda link: obj_url not in link,
             deleted_objects
         )
-
+        # Filter out child pages: these will be preserved too.
+        for child in obj.copy_of.children.all():
+            child_url = reverse("admin:pagemanager_page_change", args=(child.pk,))
+            deleted_objects = filter(
+                lambda link: child_url not in link,
+                deleted_objects
+            )
         # Populate replacing_objects, a data structure of all related objects
         # that will be replacing the originals.
         replacing_objects = introspect.get_referencing_objects(obj)
