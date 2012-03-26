@@ -76,7 +76,6 @@
                         this.sorting = false;
                         this.$groups.each(function(index, element){
                             $element = $(element);
-                            console.log($element);
                             app.orderInlines.makeSortLink().appendTo($element.find('h2'));
                             $element.sortable({
                                 'items': '.inline-related',
