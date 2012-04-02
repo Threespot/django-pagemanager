@@ -84,12 +84,14 @@ class AppListNode(template.Node):
             # Try to retrieve the __admin_name__ property from the
             # model's app's __init__.py
             to_import = '.'.join(model.__module__.split('.')[:-1])
+            print to_import
             try:
                 app_label = __import__(to_import).__APP_NAME__
             except AttributeError:
                 app_label = model._meta.app_label.title()
             app_url = model._meta.app_label.lower()
-            has_module_perms = user.has_module_perms(app_label.lower())
+
+            has_module_perms = user.has_module_perms(to_import)
             hidden_model = hasattr(model, 'hide_from_applist') and \
                 model.hide_from_applist()
             if has_module_perms and not hidden_model:
