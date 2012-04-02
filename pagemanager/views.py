@@ -41,6 +41,8 @@ class PageManagerViewMixin(object):
         return response
 
     def can_view_page(self, request):
+        if not hasattr(self, 'object'):
+            return False
         if self.object.status == 'draft':
             if not request.user.has_perm('pagemanager.view_draft_pages'):
                 return False
