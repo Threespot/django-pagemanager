@@ -3,6 +3,7 @@ from django.contrib.admin.sites import site
 from django.contrib.contenttypes.models import ContentType
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
+from django.core.urlresolvers import reverse
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from django.utils.text import capfirst
@@ -254,3 +255,16 @@ def lookup_permissions(parser, token):
         raise template.TemplateSyntaxError, message
 
     return LookupPermissionsNode(node_var_name, user_var_name)
+
+
+@register.simple_tag(takes_context=True)
+def render_add_permission(context):
+    """
+    Renders the object tool list item for adding pages if the user has
+    permission to do so, nothing otherwise.
+    """
+    user = context['request'].user
+    if user.has_perm('pagemanager.add_page'):
+        url = reverse("admin:pagemanager_page_add")
+        return '<li><a href="%s">Add New Page</a></li>' % url
+    return ''

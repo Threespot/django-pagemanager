@@ -209,7 +209,7 @@
 {% if app_list %}
     <div id="apps">
         <ul class="object-tools">
-            <li><a href="{% url admin:pagemanager_page_add %}">Add New Page</a></li>
+            {% render_add_permission %}
         </ul>
 
         {% if perms.navigation %}
