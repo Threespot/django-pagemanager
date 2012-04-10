@@ -54,7 +54,7 @@ def load_obj(parser, token):
 
 class PagesNode(template.Node):
     def render(self, context):
-        context['pagemanager_pages'] = PAGEMANAGER_PAGE_MODEL.objects.all()
+        context['pagemanager_pages'] = PAGEMANAGER_PAGE_MODEL.objects.select_related('parent').all()
         context['pagemanager_page_model'] = PAGEMANAGER_PAGE_MODEL
         return ''
 

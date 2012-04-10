@@ -2,6 +2,8 @@ from functools import partial
 
 from django.core.exceptions import ImproperlyConfigured
 from django.conf import settings
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.http import Http404
 
 from pagemanager import PageAdmin
@@ -78,3 +80,25 @@ def get_page_from_path(path):
     path_pieces = filter(bool, path.split("/"))
     validate_path = partial(_validate_path_with_page, get_pagemanager_model())
     return reduce(validate_path, path_pieces, '')
+
+
+@receiver(post_save, sender=get_pagemanager_model(), dispatch_uid="mp_sig")
+def recalculate_materialized_path(sender, instance, created, *args, **kwargs):
+    """
+    A signal which updated a model's materialized path after it's been saved. It
+    also updated the paths of any descendants.
+    
+    Note that this must be done through the ``update`` method, as triggering a 
+    model's ``save`` function again will create an endless loop.
+    """
+    materialized_path = instance.get_materialized_path()
+    sender.objects.filter(pk=instance.pk).update(
+        materialized_path=materialized_path
+    )
+    # If the instance is not new, it may have descendants whose paths also need
+    # to be recached.
+    for descendant in instance.get_descendants():
+        materialized_path = descendant.get_materialized_path()
+        sender.objects.filter(pk=descendant.pk).update(
+            materialized_path=materialized_path
+        )    

@@ -42,7 +42,7 @@
                         'html_titles': true,
                         'initially_open': [
                             {% for node in pagemanager_pages %}
-                                {% if node.get_ancestors|length < 1 %}
+                                {% if node.level < 2 %}
                                     '#{{ node.node_id }}',
                                 {% endif %}
                             {% endfor %}

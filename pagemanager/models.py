@@ -14,6 +14,28 @@ from pagemanager.permissions import get_published_status_name, \
 from pagemanager.managers import PageManager
 
 
+def attach_generics(queryset):
+    """
+    Manually attach generic relations to avoid a ridiculous
+    amount of database calls.
+    """
+    generics = {}
+    for item in queryset:
+        # create a dictionary of object ids per content type id
+        generics.setdefault(item.layout_type_id, set()).add(item.object_id)
+    # fetch all associated content types with the queryset
+    content_types = ContentType.objects.in_bulk(generics.keys())
+    relations = {}
+    for ct, fk_list in generics.items():
+        # for every content type, fetch all the object ids of that type
+        ct_model = content_types[ct].model_class()
+        relations[ct] = ct_model.objects.in_bulk(list(fk_list))
+    for item in queryset:
+        setattr(
+            item, 'page_layout', relations[item.layout_type_id][item.object_id]
+        )
+
+
 class Page(MPTTModel):
     """
     The model of a page.
@@ -51,6 +73,7 @@ class Page(MPTTModel):
     layout_type = models.ForeignKey(ContentType, blank=True, null=True)
     object_id = models.PositiveIntegerField(blank=True, null=True)
     page_layout = generic.GenericForeignKey('layout_type', 'object_id')
+    materialized_path = models.TextField(blank=True)
 
     objects = PageManager()
 
@@ -88,14 +111,14 @@ class Page(MPTTModel):
                     old_homepage.save()
         return super(Page, self).clean()
 
+    def get_children(self):
+        kids = super(Page, self).get_children()
+        attach_generics(kids)
+        return kids
+
     @models.permalink
     def get_absolute_url(self):
-        path = '%s/%s' % (self.path_prefix, self.slug,)
-        if path.startswith('/'):
-            path = path[1:]
-        return ('pagemanager_page', (), {
-            'path': path
-        })
+        return ('pagemanager_page', (), {'path': self.materialized_path})
 
     def get_add_url(self):
         return reverse('admin:%s_%s_add' % (
@@ -130,6 +153,15 @@ class Page(MPTTModel):
             ), args=[self.page_layout.pk])
         except AttributeError:
             return ''
+
+    def get_materialized_path(self):
+        """
+        Return a string consiting of the current page slug, followed by
+        the slug values of its ancestors, separated by a "/".
+        """
+        page_chain =  [a.slug for a in self.get_ancestors()]
+        page_chain.append(self.slug)
+        return '/'.join(page_chain)
 
     @property
     def path_prefix(self):

@@ -38,3 +38,17 @@ class PageManager(models.Manager):
         return self.get_query_set().exclude(
             copy_of__exact=None
         )
+
+    def generate_materialized_paths(self):
+        """
+        Warms up the ``materialized_path`` model field in all Pages.
+        Returns the number of pages that were updated.
+        """
+        counter = 0
+        for page in self.get_query_set().all():
+            materialized_path = page.get_materialized_path()
+            self.model.objects.filter(pk=page.pk).update(
+                materialized_path=materialized_path
+            )
+            counter += 1
+        return counter
