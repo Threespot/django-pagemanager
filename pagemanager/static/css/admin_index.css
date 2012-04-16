@@ -5,8 +5,10 @@
     width: auto !important;
 }
 
+
 #content-main{
     float: none;
+    width: 100%;
 }
 #pagemanager{
     width: 74%;
@@ -208,6 +210,8 @@
     clear: both;
 }
 
+
+
 .jstree .actions{
     float: right;
     border-left: 1px solid #EEE;
@@ -222,9 +226,9 @@
         border-left-color: rgba(255, 255, 255, 0.5);
         background: rgba(255, 255, 255, 0.25);
     }
-    .jstree .actions a{
+    .jstree .actions a {
         float: left;
-        padding: 8px 0 0 15px;
+        padding: 8px 0 0 15px !important;
         height: 23px;
         font-size: 10px;
         display: inline-block;
@@ -266,14 +270,15 @@
 .add-row{
     background: url("../img/nav-bg.gif") repeat-x scroll left top #E1E1E1;
     color: #666666;
-    padding: 5px 12px 4px 5px;
+    width: 100%;
+    padding: 5px 0 4px 0;
 }
     .add-row a{
         float: right;
         background: url("../img/add.gif") no-repeat scroll 0 50% transparent;
         font-size: 11px;
         outline: 0 none;
-        padding-left: 14px;
+        padding: 0px 12px 0px 13px;
         color: #5B80B2;
         text-decoration: none;
     }
