@@ -6,12 +6,9 @@ from django.contrib.admin.util import unquote
 from django.contrib.contenttypes import generic
 from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
-from django.db import models
 from django.forms.widgets import Media
 from django.http import HttpResponseRedirect
 from django.utils.encoding import force_unicode
-
-from reversion.admin import VersionAdmin
 
 from pagemanager import PageAdmin
 from pagemanager.app_settings import PAGEMANAGER_PAGE_MODEL, \
@@ -172,6 +169,13 @@ class PageLayoutAdmin(admin.ModelAdmin):
         """
         return HttpResponseRedirect(reverse('admin:pagemanager_page_add'))
 
+    @staticmethod
+    def get_default_response_change_url():
+        """
+        Returns the URL to redirect on standard save of layout.
+        """
+        return reverse('admin:index')
+
     def response_change(self, request, obj):
         """
         There are three buttons that you can press when editing a
@@ -189,7 +193,6 @@ class PageLayoutAdmin(admin.ModelAdmin):
         if obj._deferred:
             opts_ = opts.proxy_for_model._meta
             verbose_name = opts_.verbose_name
-        pk_value = obj._get_pk_val()
 
         msg = 'The page "%(obj)s" was changed successfully.' % {
             'name': force_unicode(verbose_name),
@@ -206,7 +209,8 @@ class PageLayoutAdmin(admin.ModelAdmin):
                 reverse('admin:pagemanager_page_add')
             )
         else:
-            return HttpResponseRedirect(reverse('admin:index'))
+            url = self.get_default_response_change_url()
+            return HttpResponseRedirect(url)
 
 # Dynamically register admins for each registered PageLayout subclass
 for page_layout in pagemanager_site._registry:
