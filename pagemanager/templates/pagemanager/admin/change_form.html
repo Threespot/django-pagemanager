@@ -24,6 +24,7 @@
     {{ block.super }}
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/page.css" />
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/slug.css" />
+    <!--[if lte IE 8]><link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/admin-ie-extras.css" /><![endif]-->
 {% endblock %}
 
 {% block breadcrumbs %}<div class="breadcrumbs"><a href="../../../">{% trans "Home" %}</a></div>{% endblock %}
