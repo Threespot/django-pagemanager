@@ -64,23 +64,23 @@
                 <li><a href="{{ page.get_absolute_url }}" title="{%trans "View on site."%}">{% trans "View On Site" %}</a></li>
                 <li><a href="history/" class="historylink">{% trans "History" %}</a></li>
                 {% if page.copy_of%}
-                <li><a href="{% url "admin:draft_merge" page.pk %}" title="{%trans "Merge this copy over top of the original."%}">{% trans "Merge copy" %}</a></li>
-                <li><a href="../{{page.copy_of.page_layout.pk }}/" title="{%trans "Edit the original."%}">{% trans "Edit original" %}</a></li>
+                <li><a href="{% url "admin:draft_merge" page.pk %}" title="{%trans "Merge this copy over top of the original."%}">{% trans "Merge Copy" %}</a></li>
+                <li><a href="../{{page.copy_of.page_layout.pk }}/" title="{%trans "Edit the original."%}">{% trans "Edit Original" %}</a></li>
                 {% else %}
                     {% if page.is_published %}
                         {% with draft_copy=page.get_draft_copy %}
                         {% if draft_copy %}
-                        <li><a href="../{{draft_copy.page_layout.pk}}/" title="{%trans "Edit draft copy."%}">{% trans "Edit draft copy" %}</a></li>
+                        <li><a href="../{{draft_copy.page_layout.pk}}/" title="{%trans "Edit draft copy."%}">{% trans "Edit Draft Copy" %}</a></li>
                         {% else %}
-                        <li><a href="{% url "admin:draft_copy" page.pk %}" title="{%trans "Create and unpublished copy of this item."%}">{% trans "Create draft copy" %}</a></li>
+                        <li><a href="{% url "admin:draft_copy" page.pk %}" title="{%trans "Create an unpublished copy of this item."%}">{% trans "Create Draft Copy" %}</a></li>
                         {% endif %}{% endwith %}
                     {% endif %}
                 {% endif %}
                 {% if has_absolute_url %}
                     {%if page.is_published%}
-                <li><a href="../../../r/{{ content_type_id }}/{{ object_id }}/" class="viewsitelink">{% trans "View on site" %}</a></li>
+                <li><a href="../../../r/{{ content_type_id }}/{{ object_id }}/" class="viewsitelink">{% trans "View On Site" %}</a></li>
                     {%else%}
-                <li><a href="../../../r/{{ content_type_id }}/{{ object_id }}/" class="viewsitelink">{% trans "Preview on site" %}</a></li>
+                <li><a href="../../../r/{{ content_type_id }}/{{ object_id }}/" class="viewsitelink">{% trans "Preview On Site" %}</a></li>
                     {%endif%}
                 {% endif%}
             </ul>{% endwith %}

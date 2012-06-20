@@ -1,0 +1,9 @@
+/* Fixes alignment of radio button on Add Page screen */
+form .aligned.layout li input {
+	top: 23px;
+}
+
+/* Allows for clicking layout thumbnail on Add Page screen */
+form .layout.aligned li label {
+	zoom: 1;
+}
