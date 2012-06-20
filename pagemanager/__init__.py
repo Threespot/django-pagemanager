@@ -1,4 +1,3 @@
-from copy import deepcopy
 from itertools import chain
 
 from django import template
@@ -10,7 +9,7 @@ from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
 from django.db import transaction, router
 from django.db.models.fields import AutoField
-from django.db.models.fields.related import RelatedField, ManyToManyField
+from django.db.models.fields.related import RelatedField
 from django.forms import ModelForm
 from django.http import HttpResponseRedirect, HttpResponseBadRequest,\
     HttpResponse, Http404
@@ -19,14 +18,13 @@ from django.utils.encoding import force_unicode
 from django.utils.html import escape
 from django.utils.translation import ugettext as _
 
-from reversion.admin import VersionAdmin
 from threespot.orm import introspect
 
-from pagemanager.forms import PageAdminFormMixin
 from pagemanager.models import Page
 from pagemanager.permissions import get_permissions, get_lookup_function, \
     get_published_status_name, get_public_visibility_name, \
     get_unpublished_status_name
+from pagemanager import signals
 from pagemanager.sites import pagemanager_site
 
 DRAFT_POSTFIX = _(" (draft copy)")
@@ -201,7 +199,6 @@ class PageAdmin(admin.ModelAdmin):
         )
         draft_copy_vw = self.admin_site.admin_view(self.copy_view)
         draft_merge_vw = self.admin_site.admin_view(self.merge_view)
-        info = self.model._meta.app_label, self.model._meta.module_name
         more = patterns('',
             url(r'^parentsorders/$', parents_orders_vw),
             url(r'^(.+)/copy/$', draft_copy_vw, name="draft_copy"),
@@ -210,18 +207,24 @@ class PageAdmin(admin.ModelAdmin):
         urls = super(PageAdmin, self).get_urls()
         return more + urls
 
+    @transaction.commit_on_success
     def parents_orders_view(self, request):
         if request.method == 'POST':
-            for page_id, values in request.POST.iteritems():
+            items = request.POST.items()
+            branch_ids = set()
+            for page_id, values in items:
                 parent, order = values.split(',')
                 page = Page.objects.get(pk=int(page_id))
                 try:
-                    page.parent = Page.objects.get(pk=parent)
+                    parent = Page.objects.get(pk=parent)
                 except ValueError:
-                    page.parent = None
+                    parent = None
                 page.order = order
+                page.parent = parent
                 page.save()
-            return HttpResponse()
+                branch_ids.add(page.pk)
+            signals.page_moved.send(sender=self, branch_ids=branch_ids)
+            return HttpResponse("Moved sucessfully.")
         raise Http404
 
     @csrf_protect_m
@@ -370,7 +373,6 @@ class PageAdmin(admin.ModelAdmin):
         # ``get_deleted_objects`` is zealous and will add the draft copy to
         # the list of things to be deleted. This needs to be removed.
         obj_url = reverse("admin:pagemanager_page_change", args=(obj.pk,))
-        obj_name = unicode(obj)
         deleted_objects = filter(
             lambda link: obj_url not in link,
             deleted_objects
@@ -523,7 +525,6 @@ class PageAdmin(admin.ModelAdmin):
         """
 
         if not obj.pk:
-
             # Create new instance of PostLayout subclass
             layout_model = pagemanager_site.get_by_name(request.POST['layout'])
             layout = layout_model()
@@ -532,5 +533,5 @@ class PageAdmin(admin.ModelAdmin):
             # Associate PostLayout subclass instance with Page
             obj.layout_type = ContentType.objects.get_for_model(layout_model)
             obj.object_id = layout.pk
-
         obj.save()
+        signals.page_edited.send(sender=self, page=obj, created=True)

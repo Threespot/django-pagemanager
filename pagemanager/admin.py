@@ -15,6 +15,7 @@ from pagemanager.app_settings import PAGEMANAGER_PAGE_MODEL, \
     PAGEMANAGER_PAGE_MODELADMIN
 from pagemanager.forms import PageAdminFormMixin
 from pagemanager.models import Page, PlaceholderPage, RedirectPage
+from pagemanager import signals
 from pagemanager.sites import pagemanager_site
 from pagemanager.permissions import get_permissions, get_lookup_function
 
@@ -155,6 +156,8 @@ class PageLayoutAdmin(admin.ModelAdmin):
                     )
                     messages.add_message(request, messages.ERROR, message)
                     return HttpResponseRedirect(this_url)
+            # Fire the custom signal for page editing in the admin.
+            signals.page_edited.send(sender=self, page=page, created=False)
 
         # All permissions checks have passed.
         return super(PageLayoutAdmin, self).change_view(
