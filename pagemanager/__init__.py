@@ -2,6 +2,7 @@ from itertools import chain
 
 from django import template
 from django.contrib import admin
+from django.contrib.admin.models import LogEntry
 from django.contrib.admin.options import csrf_protect_m
 from django.contrib.admin.util import get_deleted_objects, unquote
 from django.contrib.contenttypes.models import ContentType
@@ -406,8 +407,21 @@ class PageAdmin(admin.ModelAdmin):
             self.log_change(request, obj, obj_display)
 
             original = obj.copy_of
+            original_pk = original.pk
+            original_layout_pk = original.page_layout.pk
             self._merge_item(original, obj)
-
+            # Look up admin log entries for the old object and reassign them
+            # to the new object.
+            page_ctype = ContentType.objects.get_for_model(original)
+            layout_ctype = ContentType.objects.get_for_model(original.page_layout)
+            LogEntry.objects.filter(
+                content_type=page_ctype,
+                object_id=original_pk
+            ).update(object_id=obj.pk)
+            LogEntry.objects.filter(
+                content_type=layout_ctype,
+                object_id=original_layout_pk
+            ).update(object_id=obj.page_layout.pk)
             self.message_user(
                 request,
                 _('The %(name)s "%(obj)s" was merged successfully.') % {
