@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from django.utils.encoding import smart_str
 
 from pagemanager.models import Page
 
@@ -40,10 +41,11 @@ class Command(BaseCommand):
         """
         expected_path = page.get_materialized_path()
         if expected_path != page.materialized_path:
+            page_name = smart_str(unicode(page))
             self.stdout.write((
                 'The page "%s" is wrong...\n\tCurrent path is "%s"'
                 '\n\tPath should be "%s"\n'
-            ) % (unicode(page), page.materialized_path, page.get_materialized_path()))
+            ) % (page_name, smart_str(page.materialized_path), smart_str(expected_path)))
             page.materialized_path = expected_path
             page.save()
             return True
